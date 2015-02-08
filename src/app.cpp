@@ -1,5 +1,7 @@
 #include "app.h"
+//#include "cinder/Color.h"
 
+using namespace ci;
 namespace cieq
 {
 
@@ -7,7 +9,8 @@ InputAnalyzer::InputAnalyzer()
 	: mGlobals(mEventProcessor)
 	, mAudioNodes(mGlobals)
 	, mSpectrumPlot(mAudioNodes)
-	, mWaveformPlot(mAudioNodes)
+    , mWaveformPlot(mAudioNodes)
+    , mWaveformPlotShifted(mAudioNodes)
 {}
 
 void InputAnalyzer::prepareSettings(Settings *settings)
@@ -20,7 +23,7 @@ void InputAnalyzer::prepareSettings(Settings *settings)
 	settings->setResizable(true);
 
 	// Title of the graphical window when it pops up
-	settings->setTitle("Cinder Audio Equalizer");
+	settings->setTitle("FCS Audio Analyzer");
 
 	// Get the current display (monitor) dimensions
 	const auto current_display_size = settings->getDisplay()->getSize();
@@ -45,14 +48,19 @@ void InputAnalyzer::setup()
 	const auto plot_size_width = 0.9f * window_size.x; // 90% of window width
 	const auto plot_size_height = 0.8f * 0.5f * window_size.y; // half of 90% of window width
 
-	mSpectrumPlot.setup();
+	//mSpectrumPlot.setup();
+    mWaveformPlotShifted.setup();
 	mWaveformPlot.setup();
 
 	ci::Vec2f top_left = 0.05f * window_size;
-	mSpectrumPlot.setPlotTitle("FFT Analysis of input data");
-	mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
-	mSpectrumPlot.setHorzAxisTitle("Frequency").setHorzAxisUnit("Hz");
-	mSpectrumPlot.setVertAxisTitle("Magnitude").setVertAxisUnit("Db");
+	//mSpectrumPlot.setPlotTitle("FFT Analysis of input data");
+	//mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+	//mSpectrumPlot.setHorzAxisTitle("Frequency").setHorzAxisUnit("Hz");
+	//mSpectrumPlot.setVertAxisTitle("Magnitude").setVertAxisUnit("Db");
+    mWaveformPlotShifted.setPlotTitle("RAW input data");
+    mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    mWaveformPlotShifted.setHorzAxisTitle("Time").setHorzAxisUnit("s");
+    mWaveformPlotShifted.setVertAxisTitle("Amplitude").setVertAxisUnit("...");
 
 	top_left.y += 0.5f * window_size.y;
 	mWaveformPlot.setPlotTitle("RAW input data");
@@ -68,7 +76,8 @@ void InputAnalyzer::resize()
 	const auto plot_size_height = 0.8f * 0.5f * window_size.y; // half of 90% of window width
 
 	ci::Vec2f top_left = 0.05f * window_size;
-	mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+	//mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
 
 	top_left.y += 0.5f * window_size.y;
 	mWaveformPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
@@ -81,11 +90,13 @@ void InputAnalyzer::update()
 
 void InputAnalyzer::draw()
 {
-	ci::gl::clear();
+    //Set background color for main window
+	ci::gl::clear(ColorA::gray(0.25f,0));
 	ci::gl::enableAlphaBlending();
 
-	mSpectrumPlot.draw();
-	mWaveformPlot.draw();
+	//mSpectrumPlot.draw(0);
+    mWaveformPlotShifted.draw(1);
+	mWaveformPlot.draw(0);
 }
 
 void InputAnalyzer::shutdown()

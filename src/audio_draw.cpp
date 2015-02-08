@@ -15,9 +15,9 @@ Plot::Plot()
 	, mBoundsColor(0.5f, 0.5f, 0.5f, 1)
 {}
 
-void Plot::draw()
+void Plot::draw(size_t shift) //Added 'size_t shift' to hopefully allow for window shifting
 {
-	drawLocal();
+	drawLocal(shift);
 
 	if (mDrawBounds)
 	{
@@ -75,7 +75,7 @@ SpectrumPlot::SpectrumPlot(AudioNodes& nodes)
 {}
 
 // original draw function is from Cinder examples _audio/common
-void SpectrumPlot::drawLocal()
+void SpectrumPlot::drawLocal(size_t shift) //Added 'size_t shift' to hopefully allow for window shifting
 {
 	auto& spectrum = mAudioNodes.getMonitorSpectralNode()->getMagSpectrum();
 	
@@ -147,9 +147,14 @@ void WaveformPlot::setGraphColor(const ci::ColorA& color)
 }
 
 // original draw function is from Cinder examples _audio/common
-void WaveformPlot::drawLocal()
+void WaveformPlot::drawLocal(size_t shift) //Added 'size_t shift' to hopefully allow for window shifting
 {
-	auto& buffer = mAudioNodes.getMonitorNode()->getBuffer();
+    auto& buffer = mAudioNodes.getMonitorNode()->getBuffer();
+    size_t hardwareSampleRate = 0;
+    //Get current sample rate of audio hardware:
+    hardwareSampleRate = mAudioNodes.getInputDeviceNode()->getSampleRate();
+    //convert window shift from seconds to number of samples:
+    shift = shift * hardwareSampleRate;
 
 	ci::gl::color(mGraphColor);
 
@@ -161,10 +166,11 @@ void WaveformPlot::drawLocal()
 		ci::PolyLine2f waveform;
 		const float *channel = buffer.getChannel(ch);
 		float x = mBounds.x1;
-		for (std::size_t i = 0; i < buffer.getNumFrames(); i++) {
+        //Added the '- shift' and '+ shift' portions below to allow for window shifting
+        for (std::size_t i = 0; i < (buffer.getNumFrames() - shift); i++) {
 			x += xScale;
-			float y = (1 - (channel[i] * 0.5f + 0.5f)) * waveHeight + yOffset;
-			waveform.push_back(ci::Vec2f(x, y));
+            float y = (1 - (channel[i + shift] * 0.5f + 0.5f)) * waveHeight + yOffset;
+            waveform.push_back(ci::Vec2f(x, y));
 		}
 
 		if (!waveform.getPoints().empty())

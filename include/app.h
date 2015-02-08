@@ -40,7 +40,7 @@ private:
 	AppGlobals		mGlobals;
 	AudioNodes		mAudioNodes;
 	SpectrumPlot	mSpectrumPlot;
-	WaveformPlot	mWaveformPlot;
+    WaveformPlot	mWaveformPlot, mWaveformPlotShifted;
 };
 
 } //!cieq

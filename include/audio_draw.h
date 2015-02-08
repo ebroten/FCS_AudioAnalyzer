@@ -23,7 +23,7 @@ public:
 	Plot();
 	virtual ~Plot() {};
 	void			setup();
-
+    
 	Plot&			setHorzAxisTitle(const std::string& title)	{ mHorzTitle = title; onHorzAxisTextChange(); return *this; }
 	Plot&			setVertAxisTitle(const std::string& title)	{ mVertTitle = title; onVertAxisTextChange(); return *this; }
 	Plot&			setVertAxisUnit(const std::string& unit)	{ mVertUnit = unit; onVertAxisTextChange(); return *this; }
@@ -34,8 +34,9 @@ public:
 	Plot&			setDrawBounds(bool on = true)				{ mDrawBounds = on; return *this; }
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
-	virtual	void	drawLocal() = 0;
-	void			draw();
+	virtual	void	drawLocal(size_t shift) = 0;
+    //Original: void			draw();
+    void			draw(size_t shift);
 	void			drawBounds();
 	void			drawLabels();
 
@@ -61,7 +62,8 @@ public:
 	WaveformPlot(AudioNodes& nodes);
 
 	void					setGraphColor(const ci::ColorA& color);
-	void					drawLocal() override;
+//Original:    void					drawLocal() override;
+    void					drawLocal(size_t shift);
 
 private:
 	ci::ColorA				mGraphColor;
@@ -73,8 +75,9 @@ class SpectrumPlot final : public Plot
 public:
 	SpectrumPlot(AudioNodes& nodes);
 
-	void enableDecibelsScale(bool on = true);
-	void drawLocal() override;
+    void enableDecibelsScale(bool on = true);
+    //Original:    void drawLocal() override;
+    void drawLocal(size_t shift);
 
 private:
 	bool					mScaleDecibels;
