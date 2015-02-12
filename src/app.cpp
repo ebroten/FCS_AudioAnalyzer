@@ -37,7 +37,7 @@ void InputAnalyzer::prepareSettings(Settings *settings)
 
 void InputAnalyzer::setup()
 {
-    mParams = ci::params::InterfaceGl::create(cinder::app::getWindow(), "App parameters", ci::app::toPixels(ci::Vec2i(200, 400)));
+    mParams = ci::params::InterfaceGl::create(cinder::app::getWindow(), "App parameters", ci::app::toPixels(ci::Vec2i(300, 100)));
     
     mEventProcessor.addKeyboardEvent([this](char c)
     { if (c == 'p' || c == 'P') 
