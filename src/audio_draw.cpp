@@ -15,7 +15,7 @@ Plot::Plot()
     , mBoundsColor(0.5f, 0.5f, 0.5f, 1)
 {}
 
-void Plot::draw(size_t shift, size_t shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
+void Plot::draw(float shift, float shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
 {
     drawLocal(shift, shiftLength);
 
@@ -75,7 +75,7 @@ SpectrumPlot::SpectrumPlot(AudioNodes& nodes)
 {}
 
 // original draw function is from Cinder examples _audio/common
-void SpectrumPlot::drawLocal(size_t shift, size_t shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
+void SpectrumPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
 {
 	auto& spectrum = mAudioNodes.getMonitorSpectralNode()->getMagSpectrum();
 	
@@ -147,7 +147,7 @@ void WaveformPlot::setGraphColor(const ci::ColorA& color)
 }
 
 // original draw function is from Cinder examples _audio/common
-void WaveformPlot::drawLocal(size_t shift, size_t shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
+void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
 {
     auto& buffer = mAudioNodes.getMonitorNode()->getBuffer();
     size_t hardwareSampleRate = 0;
@@ -165,10 +165,10 @@ void WaveformPlot::drawLocal(size_t shift, size_t shiftLength) //Added 'size_t s
         //Convert window size of shifted window from seconds to number of samples:
         shiftLength = shiftLength * hardwareSampleRate;
     }
-    //convert window shift from seconds to number of samples:
-    shift = shift * hardwareSampleRate;
+    //convert window shift from seconds to nearest whole number of samples:
+    size_t shiftInt = floor(shift * hardwareSampleRate);
     //Calculate what number of samples needs to be subtracted from the raw number of samples:
-    size_t shiftSub = rawNumFrames - (shiftLength + shift);
+    size_t shiftSub = rawNumFrames - (shiftLength + shiftInt);
     //Calculate what the new ending sample number should be:
     size_t shiftEnd = rawNumFrames - shiftSub;
     //Need to make sure the shifted window doesn't exceed the raw input window:
@@ -182,7 +182,7 @@ void WaveformPlot::drawLocal(size_t shift, size_t shiftLength) //Added 'size_t s
 	const float waveHeight = mBounds.getHeight() / (float)buffer.getNumChannels();
     const float width = mBounds.getWidth();
     //Changed denominator to rescale xScale based on shift window so shifted signal "zooms" to full graph width:
-    const float xScale = (mBounds.getWidth() / ((float)shiftEnd - shift));
+    const float xScale = (mBounds.getWidth() / ((float)shiftEnd - shiftInt));
 
 	float yOffset = mBounds.y1;
 	for (std::size_t ch = 0; ch < buffer.getNumChannels(); ch++) {
@@ -190,9 +190,9 @@ void WaveformPlot::drawLocal(size_t shift, size_t shiftLength) //Added 'size_t s
 		const float *channel = buffer.getChannel(ch);
 		float x = mBounds.x1;
         //Added the '- shift' and '+ shift' portions below to allow for window shifting
-        for (std::size_t i = 0; i < (shiftEnd - shift); i++) {
+        for (std::size_t i = 0; i < (shiftEnd - shiftInt); i++) {
 			x += xScale;
-            float y = (1 - (channel[i + shift] * 0.5f + 0.5f)) * waveHeight + yOffset;
+            float y = (1 - (channel[i + shiftInt] * 0.5f + 0.5f)) * waveHeight + yOffset;
             waveform.push_back(ci::Vec2f(x, y));
 		}
 

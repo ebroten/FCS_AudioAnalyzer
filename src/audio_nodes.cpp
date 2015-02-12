@@ -16,13 +16,13 @@ AudioNodes::AudioNodes(AppGlobals& globals)
 void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
 {
     size_t hardwareSampleRate = 0;
-    //Desired window size in seconds:
-    //size_t userWinSize = 5;
     mInputDeviceNode = mGlobals.getAudioContext().createInputDeviceNode();
     //Get the current sample rate the audio hardware is configured for:
     hardwareSampleRate = mInputDeviceNode->getSampleRate();
+    //Convert desired window size from ms to nearest number of samples:
+    size_t userWinSizeSamples = floor((((float)userWinSize) / 1000) * hardwareSampleRate);
 	
-    auto monitorFormat = ci::audio::MonitorNode::Format().windowSize(userWinSize * hardwareSampleRate); // was originally windowSize(1024)
+    auto monitorFormat = ci::audio::MonitorNode::Format().windowSize(userWinSizeSamples); // was originally windowSize(1024)
 	mMonitorNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorNode(monitorFormat));
 	
 	auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(2048).windowSize(1024);

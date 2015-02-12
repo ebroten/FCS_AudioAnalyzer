@@ -2,7 +2,11 @@
 #define CIEQ_INCLUDE_APP_H_
 
 #include <cinder/app/AppNative.h>
+#include <functional>
 
+#include "cinder/app/AppBasic.h"
+#include "cinder/Camera.h"
+#include "cinder/params/Params.h"
 #include "app_globals.h"
 #include "app_event.h"
 #include "audio_nodes.h"
@@ -36,11 +40,14 @@ public:
 	AppGlobals&	getGlobals() { return mGlobals; }
 
 private:
-	AppEvent		mEventProcessor;
-	AppGlobals		mGlobals;
-	AudioNodes		mAudioNodes;
-	SpectrumPlot	mSpectrumPlot;
-    WaveformPlot	mWaveformPlot, mWaveformPlotShifted;
+	AppEvent	                            	mEventProcessor;
+	AppGlobals                          		mGlobals;
+	AudioNodes	                            	mAudioNodes;
+	SpectrumPlot                            	mSpectrumPlot;
+    WaveformPlot                            	mWaveformPlot, mWaveformPlotShifted; 
+    ci::params::InterfaceGlRef                  mParams;
+    float                                       shiftFloat;
+    size_t                                      shiftInt;
 };
 
 } //!cieq

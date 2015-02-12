@@ -1,4 +1,4 @@
-#include "app_globals.h"
+#include "app_params.h"
 
 #include <cinder/audio/Context.h>
 
@@ -17,16 +17,6 @@ AppEvent& AppGlobals::getEventProcessor()
 cinder::audio::Context& AppGlobals::getAudioContext()
 {
 	return *ci::audio::Context::master();
-}
-
-void AppGlobals::setParamsPtr(ci::params::InterfaceGl* const params)
-{
-    mParamsPtr = params;
-}
-
-ci::params::InterfaceGl* const AppGlobals::getParamsPtr()
-{
-    return mParamsPtr;
 }
 
 } // !namespace cieq

@@ -7,6 +7,9 @@ namespace audio
 {
     class Context;
 }
+namespace params {
+    class InterfaceGl;
+}
 } //!namespace ci::audio
 
 namespace cieq
@@ -24,11 +27,14 @@ class AppGlobals
 public:
 	AppGlobals(AppEvent&);
 
-	AppEvent&						getEventProcessor();
-	cinder::audio::Context&			getAudioContext();
+	AppEvent&				    		getEventProcessor();
+    cinder::audio::Context&	    		getAudioContext();
+    void								setParamsPtr(cinder::params::InterfaceGl* const params);
+    cinder::params::InterfaceGl* const	getParamsPtr();
 
 private:
-	AppEvent&						mEventProcessor;
+    AppEvent&					    	mEventProcessor;
+    cinder::params::InterfaceGl*		mParamsPtr;
 };
 
 } //!cieq

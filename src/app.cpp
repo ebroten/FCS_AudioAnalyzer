@@ -1,5 +1,4 @@
 #include "app.h"
-//#include "cinder/Color.h"
 
 namespace cieq
 {
@@ -38,7 +37,28 @@ void InputAnalyzer::prepareSettings(Settings *settings)
 
 void InputAnalyzer::setup()
 {
-	mAudioNodes.setup(5);
+    mParams = ci::params::InterfaceGl::create(cinder::app::getWindow(), "App parameters", ci::app::toPixels(ci::Vec2i(200, 400)));
+    
+    mEventProcessor.addKeyboardEvent([this](char c)
+    { if (c == 'p' || c == 'P') 
+        {
+            if (mParams->isVisible())
+                mParams->hide();
+            else
+                mParams->show();
+        }
+    });
+    mGlobals.setParamsPtr(mParams.get());
+
+    //Setup parameters:
+    shiftFloat = 0;
+    shiftInt = 0;
+    mParams->addParam("Window Shift (Float)", &shiftFloat);
+    mParams->addParam("Window Shift (size_t)", &shiftInt);
+
+    //Window size can be entered in ms now for the mAudioNodes.setup call:
+	mAudioNodes.setup(10);
+
 	mEventProcessor.addKeyboardEvent([this](char c){ if (c == 's' || c == 'S') mAudioNodes.toggleInput(); });
 	mEventProcessor.addMouseEvent([this](float, float){ mAudioNodes.toggleInput(); });
 
@@ -88,14 +108,19 @@ void InputAnalyzer::update()
 
 void InputAnalyzer::draw()
 {
+
     //Set background color for main window
     ci::ColorA backgroundColor = ci::ColorA::gray(0.25f, 0);
     ci::gl::clear(backgroundColor);
 	ci::gl::enableAlphaBlending();
 
 	//mSpectrumPlot.draw(0);
-    mWaveformPlotShifted.draw(1,2);
-	mWaveformPlot.draw(0,0);
+    mWaveformPlotShifted.draw(0,0.5);
+    mWaveformPlot.draw(0, 10);
+
+    //Draw parameter window:
+    mParams->draw();
+
 }
 
 void InputAnalyzer::shutdown()
