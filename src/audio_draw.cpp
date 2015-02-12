@@ -180,8 +180,9 @@ void WaveformPlot::drawLocal(size_t shift, size_t shiftLength) //Added 'size_t s
 	ci::gl::color(mGraphColor);
 
 	const float waveHeight = mBounds.getHeight() / (float)buffer.getNumChannels();
-    const float xScale = mBounds.getWidth() / (float)buffer.getNumFrames();
-    //const float xScale = (float)shiftEnd / (float)buffer.getNumFrames();
+    const float width = mBounds.getWidth();
+    //Changed denominator to rescale xScale based on shift window so shifted signal "zooms" to full graph width:
+    const float xScale = (mBounds.getWidth() / ((float)shiftEnd - shift));
 
 	float yOffset = mBounds.y1;
 	for (std::size_t ch = 0; ch < buffer.getNumChannels(); ch++) {

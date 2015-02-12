@@ -38,7 +38,7 @@ public:
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
     virtual	void	drawLocal(size_t shift, size_t shiftLength) = 0;
-    //Original: void			draw();
+    //Added size_t shift and size_t shiftLength parameters to allow for window shifting:
     void			draw(size_t shift, size_t shiftLength);
 	void			drawBounds();
 	void			drawLabels();
@@ -64,8 +64,8 @@ class WaveformPlot final : public Plot
 public:
 	WaveformPlot(AudioNodes& nodes);
 
-	void					setGraphColor(const ci::ColorA& color);
-//Original:    void					drawLocal() override;
+    void					setGraphColor(const ci::ColorA& color);
+    //Added size_t shift and size_t shiftLength parameters to allow for window shifting:
     void					drawLocal(size_t shift, size_t shiftLength);
 
 private:
@@ -79,7 +79,7 @@ public:
 	SpectrumPlot(AudioNodes& nodes);
 
     void enableDecibelsScale(bool on = true);
-    //Original:    void drawLocal() override;
+    //Added size_t shift and size_t shiftLength parameters to allow for window shifting:
     void drawLocal(size_t shift, size_t shiftLength);
 
 private:

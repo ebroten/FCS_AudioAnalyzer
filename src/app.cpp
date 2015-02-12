@@ -94,7 +94,7 @@ void InputAnalyzer::draw()
 	ci::gl::enableAlphaBlending();
 
 	//mSpectrumPlot.draw(0);
-    mWaveformPlotShifted.draw(1,4);
+    mWaveformPlotShifted.draw(1,2);
 	mWaveformPlot.draw(0,0);
 }
 
