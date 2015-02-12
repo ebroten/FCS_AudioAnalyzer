@@ -51,13 +51,15 @@ void InputAnalyzer::setup()
     mGlobals.setParamsPtr(mParams.get());
 
     //Setup parameters:
-    shiftFloat = 0;
-    shiftInt = 0;
-    mParams->addParam("Window Shift (Float)", &shiftFloat).min(0.0f).max(0.5f).precision(3).step(0.001f);
-    mParams->addParam("Window Shift (size_t)", &shiftInt);
+    userWinSize = 250;
+    shift = ((float)userWinSize / 1000) / 4;
+    shiftLength = ((float)userWinSize / 1000) / 2;
+    mParams->addParam("Window Size (ms)", &userWinSize).min(10).max(500).step(1);
+    mParams->addParam("Window Shift (s)", &shift).min(0.0f).max(0.5f).precision(3).step(0.001f);
+    mParams->addParam("Window Shift Length (s)", &shiftLength).min(0.01f).max(0.5f).precision(3).step(0.001f);
 
     //Window size can be entered in ms now for the mAudioNodes.setup call:
-	mAudioNodes.setup(500);
+    mAudioNodes.setup(userWinSize);
 
 	mEventProcessor.addKeyboardEvent([this](char c){ if (c == 's' || c == 'S') mAudioNodes.toggleInput(); });
 	mEventProcessor.addMouseEvent([this](float, float){ mAudioNodes.toggleInput(); });
@@ -115,7 +117,7 @@ void InputAnalyzer::draw()
 	ci::gl::enableAlphaBlending();
 
 	//mSpectrumPlot.draw(0);
-    mWaveformPlotShifted.draw(0.1,0.25);
+    mWaveformPlotShifted.draw(shift, shiftLength);
     mWaveformPlot.draw(0, 10);
 
     //Draw parameter window:

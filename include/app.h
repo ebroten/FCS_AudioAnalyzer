@@ -46,8 +46,9 @@ private:
 	SpectrumPlot                            	mSpectrumPlot;
     WaveformPlot                            	mWaveformPlot, mWaveformPlotShifted; 
     ci::params::InterfaceGlRef                  mParams;
-    float                                       shiftFloat;
-    size_t                                      shiftInt;
+    size_t                                      userWinSize;
+    float                                       shift;
+    float                                       shiftLength;
 };
 
 } //!cieq
