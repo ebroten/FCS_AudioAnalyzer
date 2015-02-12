@@ -1,10 +1,13 @@
 #ifndef CIEQ_INCLUDE_APP_GLOBALS_H_
 #define CIEQ_INCLUDE_APP_GLOBALS_H_
 
-namespace cinder {
-namespace audio {
-class Context;
-}} //!namespace ci::audio
+namespace cinder 
+{
+namespace audio 
+{
+    class Context;
+}
+} //!namespace ci::audio
 
 namespace cieq
 {

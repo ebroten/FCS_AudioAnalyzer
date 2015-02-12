@@ -1,10 +1,8 @@
 #include "app.h"
 //#include "cinder/Color.h"
 
-using namespace ci;
 namespace cieq
 {
-
 InputAnalyzer::InputAnalyzer()
 	: mGlobals(mEventProcessor)
 	, mAudioNodes(mGlobals)
@@ -40,7 +38,7 @@ void InputAnalyzer::prepareSettings(Settings *settings)
 
 void InputAnalyzer::setup()
 {
-	mAudioNodes.setup();
+	mAudioNodes.setup(5);
 	mEventProcessor.addKeyboardEvent([this](char c){ if (c == 's' || c == 'S') mAudioNodes.toggleInput(); });
 	mEventProcessor.addMouseEvent([this](float, float){ mAudioNodes.toggleInput(); });
 
@@ -57,7 +55,7 @@ void InputAnalyzer::setup()
 	//mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
 	//mSpectrumPlot.setHorzAxisTitle("Frequency").setHorzAxisUnit("Hz");
 	//mSpectrumPlot.setVertAxisTitle("Magnitude").setVertAxisUnit("Db");
-    mWaveformPlotShifted.setPlotTitle("RAW input data");
+    mWaveformPlotShifted.setPlotTitle("RAW input data - Shifted");
     mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
     mWaveformPlotShifted.setHorzAxisTitle("Time").setHorzAxisUnit("s");
     mWaveformPlotShifted.setVertAxisTitle("Amplitude").setVertAxisUnit("...");
@@ -91,12 +89,13 @@ void InputAnalyzer::update()
 void InputAnalyzer::draw()
 {
     //Set background color for main window
-	ci::gl::clear(ColorA::gray(0.25f,0));
+    ci::ColorA backgroundColor = ci::ColorA::gray(0.25f, 0);
+    ci::gl::clear(backgroundColor);
 	ci::gl::enableAlphaBlending();
 
 	//mSpectrumPlot.draw(0);
-    mWaveformPlotShifted.draw(1);
-	mWaveformPlot.draw(0);
+    mWaveformPlotShifted.draw(1,4);
+	mWaveformPlot.draw(0,0);
 }
 
 void InputAnalyzer::shutdown()

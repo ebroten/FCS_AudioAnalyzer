@@ -7,10 +7,13 @@
 
 #include <vector>
 
-namespace cinder {
-namespace gl {
-class TextureFont;
-}} //!ci::gl
+namespace cinder 
+{
+namespace gl 
+{
+    class TextureFont;
+}
+} //!ci::gl
 
 namespace cieq
 {
@@ -34,9 +37,9 @@ public:
 	Plot&			setDrawBounds(bool on = true)				{ mDrawBounds = on; return *this; }
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
-	virtual	void	drawLocal(size_t shift) = 0;
+    virtual	void	drawLocal(size_t shift, size_t shiftLength) = 0;
     //Original: void			draw();
-    void			draw(size_t shift);
+    void			draw(size_t shift, size_t shiftLength);
 	void			drawBounds();
 	void			drawLabels();
 
@@ -63,7 +66,7 @@ public:
 
 	void					setGraphColor(const ci::ColorA& color);
 //Original:    void					drawLocal() override;
-    void					drawLocal(size_t shift);
+    void					drawLocal(size_t shift, size_t shiftLength);
 
 private:
 	ci::ColorA				mGraphColor;
@@ -77,7 +80,7 @@ public:
 
     void enableDecibelsScale(bool on = true);
     //Original:    void drawLocal() override;
-    void drawLocal(size_t shift);
+    void drawLocal(size_t shift, size_t shiftLength);
 
 private:
 	bool					mScaleDecibels;

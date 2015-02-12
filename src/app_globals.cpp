@@ -6,7 +6,7 @@ namespace cieq
 {
 
 AppGlobals::AppGlobals(AppEvent& event_processor)
-	: mEventProcessor(event_processor)
+    :mEventProcessor(event_processor)
 {}
 
 AppEvent& AppGlobals::getEventProcessor()

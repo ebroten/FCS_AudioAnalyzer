@@ -9,15 +9,15 @@ namespace cieq
 {
 
 AudioNodes::AudioNodes(AppGlobals& globals)
-	: mGlobals(globals)
-	, mIsEnabled(false)
+    : mGlobals(globals)
+    , mIsEnabled(false)
 {}
 
-void AudioNodes::setup(bool auto_enable /*= true*/)
+void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
 {
     size_t hardwareSampleRate = 0;
     //Desired window size in seconds:
-    size_t userWinSize = 5;
+    //size_t userWinSize = 5;
     mInputDeviceNode = mGlobals.getAudioContext().createInputDeviceNode();
     //Get the current sample rate the audio hardware is configured for:
     hardwareSampleRate = mInputDeviceNode->getSampleRate();
