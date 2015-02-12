@@ -53,11 +53,11 @@ void InputAnalyzer::setup()
     //Setup parameters:
     shiftFloat = 0;
     shiftInt = 0;
-    mParams->addParam("Window Shift (Float)", &shiftFloat);
+    mParams->addParam("Window Shift (Float)", &shiftFloat).min(0.0f).max(0.5f).precision(3).step(0.001f);
     mParams->addParam("Window Shift (size_t)", &shiftInt);
 
     //Window size can be entered in ms now for the mAudioNodes.setup call:
-	mAudioNodes.setup(10);
+	mAudioNodes.setup(500);
 
 	mEventProcessor.addKeyboardEvent([this](char c){ if (c == 's' || c == 'S') mAudioNodes.toggleInput(); });
 	mEventProcessor.addMouseEvent([this](float, float){ mAudioNodes.toggleInput(); });
@@ -115,7 +115,7 @@ void InputAnalyzer::draw()
 	ci::gl::enableAlphaBlending();
 
 	//mSpectrumPlot.draw(0);
-    mWaveformPlotShifted.draw(0,0.5);
+    mWaveformPlotShifted.draw(0.1,0.25);
     mWaveformPlot.draw(0, 10);
 
     //Draw parameter window:

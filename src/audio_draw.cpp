@@ -155,6 +155,8 @@ void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shi
     hardwareSampleRate = mAudioNodes.getInputDeviceNode()->getSampleRate();
     //Get total number of frames in raw audio buffer:
     size_t rawNumFrames = buffer.getNumFrames();
+    //Create a variable to use for window size of shifted window in samples:
+    size_t shiftLengthSamples = 0;
     //Check to make sure there was an input given for shiftLength:
     if (shiftLength <= 0 || shiftLength == NULL)
     {
@@ -162,13 +164,13 @@ void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shi
     }
     else
     {
-        //Convert window size of shifted window from seconds to number of samples:
-        shiftLength = shiftLength * hardwareSampleRate;
+        //Convert window size of shifted window from seconds to nearest whole number of samples:
+        shiftLengthSamples = floor(shiftLength * hardwareSampleRate);
     }
     //convert window shift from seconds to nearest whole number of samples:
     size_t shiftInt = floor(shift * hardwareSampleRate);
     //Calculate what number of samples needs to be subtracted from the raw number of samples:
-    size_t shiftSub = rawNumFrames - (shiftLength + shiftInt);
+    size_t shiftSub = rawNumFrames - (shiftLengthSamples + shiftInt);
     //Calculate what the new ending sample number should be:
     size_t shiftEnd = rawNumFrames - shiftSub;
     //Need to make sure the shifted window doesn't exceed the raw input window:
@@ -185,12 +187,14 @@ void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shi
     const float xScale = (mBounds.getWidth() / ((float)shiftEnd - shiftInt));
 
 	float yOffset = mBounds.y1;
-	for (std::size_t ch = 0; ch < buffer.getNumChannels(); ch++) {
+	for (std::size_t ch = 0; ch < buffer.getNumChannels(); ch++) 
+    {
 		ci::PolyLine2f waveform;
 		const float *channel = buffer.getChannel(ch);
 		float x = mBounds.x1;
-        //Added the '- shift' and '+ shift' portions below to allow for window shifting
-        for (std::size_t i = 0; i < (shiftEnd - shiftInt); i++) {
+        //Added the 'shift' portions below to allow for window shifting:
+        for (std::size_t i = 0; i < (shiftEnd - shiftInt); i++) 
+        {
 			x += xScale;
             float y = (1 - (channel[i + shiftInt] * 0.5f + 0.5f)) * waveHeight + yOffset;
             waveform.push_back(ci::Vec2f(x, y));
