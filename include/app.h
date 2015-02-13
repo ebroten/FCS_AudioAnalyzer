@@ -47,6 +47,7 @@ private:
     WaveformPlot                            	mWaveformPlot, mWaveformPlotShifted; 
     ci::params::InterfaceGlRef                  mParams;
     size_t                                      userWinSize;
+    size_t                                      userWinSizePrev;
     float                                       shift;
     float                                       shiftLength;
 };

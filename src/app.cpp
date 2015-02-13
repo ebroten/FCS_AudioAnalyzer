@@ -52,11 +52,12 @@ void InputAnalyzer::setup()
 
     //Setup parameters:
     userWinSize = 250;
+    userWinSizePrev = userWinSize;
     shift = ((float)userWinSize / 1000) / 4;
     shiftLength = ((float)userWinSize / 1000) / 2;
     mParams->addParam("Window Size (ms)", &userWinSize).min(10).max(500).step(1);
-    mParams->addParam("Window Shift (s)", &shift).min(0.0f).max(0.5f).precision(3).step(0.001f);
-    mParams->addParam("Window Shift Length (s)", &shiftLength).min(0.01f).max(0.5f).precision(3).step(0.001f);
+    mParams->addParam("Search Shift (s)", &shift).min(0.0f).max(0.5f).precision(3).step(0.001f);
+    mParams->addParam("Search Length (s)", &shiftLength).min(0.01f).max(0.5f).precision(3).step(0.001f);
 
     //Window size can be entered in ms now for the mAudioNodes.setup call:
     mAudioNodes.setup(userWinSize);
@@ -77,7 +78,7 @@ void InputAnalyzer::setup()
 	//mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
 	//mSpectrumPlot.setHorzAxisTitle("Frequency").setHorzAxisUnit("Hz");
 	//mSpectrumPlot.setVertAxisTitle("Magnitude").setVertAxisUnit("Db");
-    mWaveformPlotShifted.setPlotTitle("RAW input data - Shifted");
+    mWaveformPlotShifted.setPlotTitle("RAW input data - Search Display");
     mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
     mWaveformPlotShifted.setHorzAxisTitle("Time").setHorzAxisUnit("s");
     mWaveformPlotShifted.setVertAxisTitle("Amplitude").setVertAxisUnit("...");
@@ -110,7 +111,14 @@ void InputAnalyzer::update()
 
 void InputAnalyzer::draw()
 {
-
+    if (userWinSize != userWinSizePrev)
+    {
+        mAudioNodes.disableInput();
+        mAudioNodes.disconnectAll();
+        mAudioNodes.setup(userWinSize);
+        mAudioNodes.enableInput();
+        userWinSizePrev = userWinSize;
+    }
     //Set background color for main window
     ci::ColorA backgroundColor = ci::ColorA::gray(0.25f, 0);
     ci::gl::clear(backgroundColor);

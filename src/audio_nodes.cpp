@@ -69,7 +69,7 @@ void AudioNodes::disableInput()
 	if (!mIsEnabled) return;
 
 	mGlobals.getAudioContext().disable();
-	mInputDeviceNode->disable();
+    mInputDeviceNode->disable();
 
 	mIsEnabled = false;
 }
@@ -84,6 +84,11 @@ void AudioNodes::toggleInput()
 	{
 		enableInput();
 	}
+}
+
+void AudioNodes::disconnectAll()
+{
+    mInputDeviceNode->disconnectAll();
 }
 
 } //!cieq

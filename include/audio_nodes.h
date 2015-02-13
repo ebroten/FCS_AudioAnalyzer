@@ -38,7 +38,9 @@ public:
 	// \brief enables reading from input
 	void												enableInput();
 	// \brief disables reading from input
-	void												disableInput();
+    void												disableInput();
+    // \brief disconnects node from all inputs and/or outputs it may be connected to
+    void												disconnectAll();
 	// \brief toggles reading from input
 	void												toggleInput();
 
