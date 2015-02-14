@@ -106,11 +106,6 @@ void InputAnalyzer::resize()
 
 void InputAnalyzer::update()
 {
-	//noop
-}
-
-void InputAnalyzer::draw()
-{
     if (userWinSize != userWinSizePrev)
     {
         mAudioNodes.disableInput();
@@ -119,6 +114,10 @@ void InputAnalyzer::draw()
         mAudioNodes.enableInput();
         userWinSizePrev = userWinSize;
     }
+}
+
+void InputAnalyzer::draw()
+{
     //Set background color for main window
     ci::ColorA backgroundColor = ci::ColorA::gray(0.25f, 0);
     ci::gl::clear(backgroundColor);
