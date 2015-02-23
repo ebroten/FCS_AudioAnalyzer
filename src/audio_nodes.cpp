@@ -16,7 +16,11 @@ AudioNodes::AudioNodes(AppGlobals& globals)
 void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
 {
     size_t hardwareSampleRate = 0;
-    mInputDeviceNode = mGlobals.getAudioContext().createInputDeviceNode();
+    if (mInputDeviceNode == NULL)
+    {
+        mInputDeviceNode = mGlobals.getAudioContext().createInputDeviceNode();
+        ci::app::getWindow()->setTitle(ci::app::getWindow()->getTitle() + " (" + mInputDeviceNode->getDevice()->getName() + ")");
+    }
     //Get the current sample rate the audio hardware is configured for:
     hardwareSampleRate = mInputDeviceNode->getSampleRate();
     //Convert desired window size from ms to nearest number of samples:
@@ -31,7 +35,6 @@ void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
 	mInputDeviceNode >> mMonitorNode;
 	mInputDeviceNode >> mMonitorSpectralNode;
 
-	ci::app::getWindow()->setTitle(ci::app::getWindow()->getTitle() + " (" + mInputDeviceNode->getDevice()->getName() + ")");
 
 	if (auto_enable)
 	{
@@ -89,6 +92,12 @@ void AudioNodes::toggleInput()
 void AudioNodes::disconnectAll()
 {
     mInputDeviceNode->disconnectAll();
+    mMonitorNode->disconnectAll();
+    mMonitorSpectralNode->disconnectAll();
+    mGlobals.getAudioContext().disconnectAllNodes();
+    //delete &mMonitorNode;
+    //delete &mMonitorSpectralNode;
+    //delete &mInputDeviceNode;
 }
 
 } //!cieq

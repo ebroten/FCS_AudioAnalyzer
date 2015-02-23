@@ -177,6 +177,7 @@ void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shi
     if (shiftEnd > rawNumFrames || shiftEnd < 0)
     {
         shiftEnd = rawNumFrames;
+        shiftInt = 0;
     }
 
 	ci::gl::color(mGraphColor);
