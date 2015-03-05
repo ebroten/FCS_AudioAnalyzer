@@ -4,22 +4,13 @@
 #include <cinder/Color.h>
 #include <cinder/Vector.h>
 #include <cinder/Rect.h>
-#include <cinder/Surface.h>
-#include <cinder/Font.h>
-#include <cinder/gl/Texture.h>
-#include <cinder/PolyLine.h>
-
 
 #include <vector>
-#include <array>
 
-namespace cinder 
-{
-namespace gl 
-{
-    class TextureFont;
-}
-} //!ci::gl
+namespace cinder {
+namespace gl {
+class TextureFont;
+}} //!ci::gl
 
 namespace cieq
 {
@@ -32,7 +23,7 @@ public:
 	Plot();
 	virtual ~Plot() {};
 	void			setup();
-    
+
 	Plot&			setHorzAxisTitle(const std::string& title)	{ mHorzTitle = title; onHorzAxisTextChange(); return *this; }
 	Plot&			setVertAxisTitle(const std::string& title)	{ mVertTitle = title; onVertAxisTextChange(); return *this; }
 	Plot&			setVertAxisUnit(const std::string& unit)	{ mVertUnit = unit; onVertAxisTextChange(); return *this; }
@@ -43,9 +34,8 @@ public:
 	Plot&			setDrawBounds(bool on = true)				{ mDrawBounds = on; return *this; }
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
-    virtual	void	drawLocal(float shift, float shiftLength) = 0;
-    //Added float shift and float shiftLength parameters to allow for window shifting:
-    void			draw(float shift, float shiftLength);
+	virtual	void	drawLocal() = 0;
+	void			draw();
 	void			drawBounds();
 	void			drawLabels();
 
@@ -57,7 +47,8 @@ protected:
 	ci::Rectf	mBounds;
 	ci::ColorA	mBoundsColor;
 	bool		mDrawBounds, mDrawLabels;
-    ci::Font	mLabelFont;
+	std::shared_ptr<cinder::gl::TextureFont>
+				mTextureFont;
 
 private:
 	void			onHorzAxisTextChange();
@@ -69,9 +60,8 @@ class WaveformPlot final : public Plot
 public:
 	WaveformPlot(AudioNodes& nodes);
 
-    void					setGraphColor(const ci::ColorA& color);
-    //Added float shift and float shiftLength parameters to allow for window shifting:
-    void					drawLocal(float shift, float shiftLength);
+	void					setGraphColor(const ci::ColorA& color);
+	void					drawLocal() override;
 
 private:
 	ci::ColorA				mGraphColor;
@@ -83,33 +73,14 @@ class SpectrumPlot final : public Plot
 public:
 	SpectrumPlot(AudioNodes& nodes);
 
-    void enableDecibelsScale(bool on = true);
-    //Added float shift and float shiftLength parameters to allow for window shifting:
-    void drawLocal(float shift, float shiftLength);
+	void enableDecibelsScale(bool on = true);
+	void drawLocal() override;
 
 private:
 	bool					mScaleDecibels;
 	std::vector<ci::Vec2f>	mVerts;
 	std::vector<ci::ColorA>	mColors;
 	AudioNodes&				mAudioNodes;
-};
-
-class SpectrogramPlot final : public Plot
-{
-public:
-    SpectrogramPlot(AudioNodes& nodes);
-
-    void							drawLocal(float shift, float shiftLength) override;
-    void							setup(int duration);
-
-private:
-    AudioNodes&						mAudioNodes;
-    std::array<ci::Surface32f, 2>	mSpectrals;
-    ci::gl::Texture					mTexCache;
-    std::size_t						mTexW, mTexH;
-    std::size_t						mFrameCounter;
-    int								mActiveSurface;
-    int								mBackBufferSurface;
 };
 
 } //!namespace cieq

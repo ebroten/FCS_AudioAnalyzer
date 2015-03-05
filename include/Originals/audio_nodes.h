@@ -3,15 +3,12 @@
 
 #include <memory>
 
-namespace cinder 
-{
-namespace audio 
-{
-    class InputDeviceNode;
-    class MonitorNode;
-    class MonitorSpectralNode;
-}
-} //!ci::audio
+namespace cinder {
+namespace audio {
+class InputDeviceNode;
+class MonitorNode;
+class MonitorSpectralNode;
+}} //!ci::audio
 
 namespace cieq
 {
@@ -34,19 +31,13 @@ public:
 	AudioNodes(AppGlobals&);
 
 	// \brief initializes all nodes and connect them together
-    void												setup(size_t userWinSize, bool auto_enable = true);
+	void												setup(bool auto_enable = true);
 	// \brief enables reading from input
 	void												enableInput();
 	// \brief disables reading from input
-    void												disableInput();
-    // \brief disconnects node from all inputs and/or outputs it may be connected to
-    void												disconnectAll();
+	void												disableInput();
 	// \brief toggles reading from input
 	void												toggleInput();
-    //Get the number of frequency bins in the current monitorSpectralNode
-    size_t                                              getNumBins();
-    //Get the FFT Size of the current monitorSpectralNode
-    size_t                                              getFftSize();
 
 	// \brief returns a pointer to the node which is reading data from input
 	cinder::audio::InputDeviceNode* const				getInputDeviceNode();

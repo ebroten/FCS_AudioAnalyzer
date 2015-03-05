@@ -29,7 +29,7 @@ void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
     auto monitorFormat = ci::audio::MonitorNode::Format().windowSize(userWinSizeSamples); // was originally windowSize(1024)
 	mMonitorNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorNode(monitorFormat));
 	
-	auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(2048).windowSize(1024);
+	auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(100).windowSize(1024);
 	mMonitorSpectralNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
 
 	mInputDeviceNode >> mMonitorNode;
@@ -98,6 +98,16 @@ void AudioNodes::disconnectAll()
     //delete &mMonitorNode;
     //delete &mMonitorSpectralNode;
     //delete &mInputDeviceNode;
+}
+
+size_t AudioNodes::getNumBins()
+{
+    return mMonitorSpectralNode->getNumBins();
+}
+
+size_t AudioNodes::getFftSize()
+{
+    return mMonitorSpectralNode->getFftSize();
 }
 
 } //!cieq

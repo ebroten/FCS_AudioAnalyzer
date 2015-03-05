@@ -18,7 +18,7 @@ namespace cieq
 /*!
  * \class InputAnalyzer
  * \brief The main application class. Handles window initialization
- * window title, and other common juju.
+          window title, etc.
  */
 class InputAnalyzer final : public ci::app::AppNative
 {
@@ -26,28 +26,49 @@ public:
 	InputAnalyzer();
 
 	// \note Tells Cinder how to prepare the window
-	void		prepareSettings(Settings *settings) override final;
+    void		prepareSettings(Settings *settings) override final;
+    //! sets up the application, this gets fired after Cinder is fully initialized.
+    void		setup() override final;
+    //! called at the beginning of every render loop, used to refresh data.
+    void		update() override final;
+    //! called at the end of every render loop, used to draw the data.
+    void		draw() override final;
+    //! application window resize callback.
+    void		resize() override final;
+    //! draws the current refresh rate of the render loop.
+    void		drawFps();
 
-	void		setup() override final;
-	void		update() override final;
-	void		draw() override final;
-	void		resize() override final;
 	void		shutdown() override final;
 
-	void		mouseDown(ci::app::MouseEvent event) override final;
+    //! gets fired on mouse click
+    void		mouseDown(ci::app::MouseEvent event) override final;
+    //! gets fired on mouse drag
+    //void		mouseDrag(ci::app::MouseEvent event) override final;
+    //! gets fired on keyboard click
 	void		keyDown(ci::app::KeyEvent event) override final;
 
 	AppGlobals&	getGlobals() { return mGlobals; }
 
 private:
-	AppEvent	                            	mEventProcessor;
-	AppGlobals                          		mGlobals;
-	AudioNodes	                            	mAudioNodes;
-	SpectrumPlot                            	mSpectrumPlot;
-    WaveformPlot                            	mWaveformPlot, mWaveformPlotShifted; 
+    //! the event processor class instance
+    AppEvent	                            	mEventProcessor;
+    //! the globals class instance, used to store common data
+    AppGlobals                          		mGlobals;
+    //! audio I/O class instance
+    AudioNodes	                            	mAudioNodes;
+    //! magnitude spectrum plot of raw input
+    SpectrumPlot                            	mSpectrumPlot;
+    //! waveform plot of raw input
+    WaveformPlot                            	mWaveformPlot, mWaveformPlotShifted;
+    //! running spectrogram plot audio signal
+    SpectrogramPlot	                            mSpectrogramPlot;
+    //! cinder's param ref, for tweaking variables during runtime
     ci::params::InterfaceGlRef                  mParams;
     size_t                                      userWinSize;
     size_t                                      userWinSizePrev;
+    size_t                                      userSpecDuration;
+    size_t                                      userSpecDurSeconds;
+    size_t                                      userSpecDurPrev;
     float                                       shift;
     float                                       shiftLength;
 };
