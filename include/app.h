@@ -69,6 +69,8 @@ private:
     size_t                                      userSpecDuration;
     size_t                                      userSpecDurSeconds;
     size_t                                      userSpecDurPrev;
+    size_t                                      userSpecMaxFreq;
+    size_t                                      userSpecMaxFreqPrev;
     float                                       shift;
     float                                       shiftLength;
 };

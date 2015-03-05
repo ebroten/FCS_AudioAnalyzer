@@ -29,9 +29,7 @@ void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
     auto monitorFormat = ci::audio::MonitorNode::Format().windowSize(userWinSizeSamples); // was originally windowSize(1024)
 	mMonitorNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorNode(monitorFormat));
 	
-    auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(131072).windowSize(userWinSizeSamples); // was originally windowSize(1024), 
-    //I also changed fftSize to 131072 to ensure we get a minimum of 273 frequency bins at the minimum display frequency range setting of 0 - 100Hz
-
+    auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(96000).windowSize(userWinSizeSamples); // was originally windowSize(1024)
 	mMonitorSpectralNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
 
 	mInputDeviceNode >> mMonitorNode;

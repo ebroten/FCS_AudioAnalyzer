@@ -47,6 +47,8 @@ public:
     size_t                                              getNumBins();
     //Get the FFT Size of the current monitorSpectralNode
     size_t                                              getFftSize();
+    //Get the frequency of the last frequency bin in the current monitorSpectralNode
+    size_t                                              getMaxFreqDisp();
 
 	// \brief returns a pointer to the node which is reading data from input
 	cinder::audio::InputDeviceNode* const				getInputDeviceNode();

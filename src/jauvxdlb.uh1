@@ -303,7 +303,7 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength)
                 {
                     pixelSpecMag = spectrum[i0 * binSkipMult];
                     auto m = ci::audio::linearToDecibel(pixelSpecMag) / 100;
-                    surface_iter.r() = m;
+                    surface_iter.r() = 1.0f - m;
                     surface_iter.g() = m;
                     surface_iter.b() = 1.0f - m;
                     //surface_iter.pixel();

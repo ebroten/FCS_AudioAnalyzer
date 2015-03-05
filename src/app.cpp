@@ -56,12 +56,15 @@ void InputAnalyzer::setup()
     userWinSizePrev = userWinSize;
     userSpecDurSeconds = 5;
     userSpecDurPrev = userSpecDurSeconds;
-    userSpecDuration = userSpecDurSeconds * ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+    userSpecDuration = userSpecDurSeconds; // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
     userSpecDurPrev = userSpecDuration;
+    userSpecMaxFreq = 10000; //Default maximum frequency display of 10kHz
+    userSpecMaxFreqPrev = userSpecMaxFreq;
     shift = ((float)userWinSize / 1000) / 4;
     shiftLength = ((float)userWinSize / 1000) / 2;
     mParams->addParam("Window Size (ms)", &userWinSize).min(10).max(500).step(1);
     mParams->addParam("Spectrogram Duration (2-20s)", &userSpecDurSeconds).min(2).max(20).step(1);
+    mParams->addParam("Spectrogram Max Freq Display (100-10000Hz)", &userSpecMaxFreq).min(100).max(10000).step(1);
     mParams->addParam("Search Shift (s)", &shift).min(0.0f).max(0.5f).precision(3).step(0.001f);
     mParams->addParam("Search Length (s)", &shiftLength).min(0.01f).max(0.5f).precision(3).step(0.001f);
 
@@ -74,13 +77,15 @@ void InputAnalyzer::setup()
 	const auto window_size = ci::app::getWindowSize();
 	const auto plot_size_width = 0.9f * window_size.x; // 90% of window width
 	const auto plot_size_height = 0.8f * 0.5f * window_size.y; // half of 90% of window width
+    ci::Vec2f top_left = 0.05f * window_size;
 
+    mSpectrogramPlot.setPlotTitle("Spectrogram");
+    mSpectrogramPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
 	//mSpectrumPlot.setup();
     mWaveformPlotShifted.setup();
     mWaveformPlot.setup();
-    mSpectrogramPlot.setup(3);
+    mSpectrogramPlot.setup(userSpecDuration);
 
-	ci::Vec2f top_left = 0.05f * window_size;
 	//mSpectrumPlot.setPlotTitle("FFT Analysis of input data");
 	//mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
 	//mSpectrumPlot.setHorzAxisTitle("Frequency").setHorzAxisUnit("Hz");
@@ -88,9 +93,9 @@ void InputAnalyzer::setup()
     //mWaveformPlotShifted.setPlotTitle("RAW input data - Search Display");
     //mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
     //mWaveformPlotShifted.setHorzAxisTitle("Time").setHorzAxisUnit("s");
-    //mWaveformPlotShifted.setVertAxisTitle("Amplitude").setVertAxisUnit("...");
-    mSpectrogramPlot.setPlotTitle("Spectrogram");
-    mSpectrogramPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    ////mWaveformPlotShifted.setVertAxisTitle("Amplitude").setVertAxisUnit("...");
+    //mSpectrogramPlot.setPlotTitle("Spectrogram");
+    //mSpectrogramPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
     mSpectrogramPlot.setHorzAxisTitle("Frequency").setHorzAxisUnit("Hz");
     mSpectrogramPlot.setVertAxisTitle("Time").setVertAxisUnit("s");
 
@@ -109,7 +114,9 @@ void InputAnalyzer::resize()
 
 	ci::Vec2f top_left = 0.05f * window_size;
 	//mSpectrumPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
-    mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    //mWaveformPlotShifted.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    mSpectrogramPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    mSpectrogramPlot.setup(userSpecDuration);
 
 	top_left.y += 0.5f * window_size.y;
 	mWaveformPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
@@ -123,13 +130,13 @@ void InputAnalyzer::update()
         mAudioNodes.disconnectAll();
         mAudioNodes.setup(userWinSize);
         mAudioNodes.enableInput();
-        userSpecDuration = userSpecDurSeconds * ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+        userSpecDuration = userSpecDurSeconds; // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
         mSpectrogramPlot.setup(userSpecDuration);
         userWinSizePrev = userWinSize;
     }
     if (userSpecDurSeconds != userSpecDurPrev)
     {
-        userSpecDuration = userSpecDurSeconds * ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+        userSpecDuration = userSpecDurSeconds; // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
         mSpectrogramPlot.setup(userSpecDuration);
         userSpecDurPrev = userSpecDurSeconds;
     }
@@ -144,7 +151,7 @@ void InputAnalyzer::draw()
 
 	//mSpectrumPlot.draw(0);
     //mWaveformPlotShifted.draw(shift, shiftLength);
-    mSpectrogramPlot.draw(0, 0);
+    mSpectrogramPlot.draw(0, userSpecMaxFreq);
     mWaveformPlot.draw(0, 10);
 
     //Draw parameter window:
@@ -177,12 +184,15 @@ void InputAnalyzer::drawFps()
     std::stringstream buf;
     std::stringstream numBins;
     std::stringstream fftSize;
+    std::stringstream maxFreqDisp;
     buf << "FPS: " << ci::app::getFrameRate();
     ci::gl::drawStringRight(buf.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 10));
     numBins << "Number of Bins: " << mAudioNodes.getNumBins();
     ci::gl::drawStringRight(numBins.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 20));
     fftSize << "FFT Size: " << mAudioNodes.getFftSize();
     ci::gl::drawStringRight(fftSize.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 30));
+    maxFreqDisp << "Max Freq Displayed: " << mAudioNodes.getMaxFreqDisp();
+    ci::gl::drawStringRight(maxFreqDisp.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 40));
 }
 
 } //!namespace cieq
