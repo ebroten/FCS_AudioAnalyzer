@@ -2,6 +2,7 @@
 #define CIEQ_INCLUDE_AUDIO_NODES_H_
 
 #include <memory>
+#include <cinder/Timer.h>
 
 namespace cinder 
 {
@@ -48,7 +49,7 @@ public:
     //Get the FFT Size of the current monitorSpectralNode
     size_t                                              getFftSize();
     //Get the frequency of the last frequency bin in the current monitorSpectralNode
-    size_t                                              getMaxFreqDisp();
+    size_t                                              getMaxFreqDisp(size_t binNumber);
 
 	// \brief returns a pointer to the node which is reading data from input
 	cinder::audio::InputDeviceNode* const				getInputDeviceNode();
@@ -58,9 +59,12 @@ public:
 	cinder::audio::MonitorSpectralNode* const			getMonitorSpectralNode();
 
 private:
-	std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode;
+    std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode;
+    std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode2;
 	std::shared_ptr<cinder::audio::MonitorNode>			mMonitorNode;
-	std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode2;
+    ci::Timer                                           mTimer;
 
 private:
 	AppGlobals&											mGlobals;

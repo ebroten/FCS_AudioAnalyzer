@@ -56,7 +56,7 @@ void InputAnalyzer::setup()
     userWinSizePrev = userWinSize;
     userSpecDurSeconds = 5;
     userSpecDurPrev = userSpecDurSeconds;
-    userSpecDuration = userSpecDurSeconds; // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+    userSpecDuration = userSpecDurSeconds / ((float)userWinSize / 1000); // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
     userSpecDurPrev = userSpecDuration;
     userSpecMaxFreq = 10000; //Default maximum frequency display of 10kHz
     userSpecMaxFreqPrev = userSpecMaxFreq;
@@ -130,13 +130,13 @@ void InputAnalyzer::update()
         mAudioNodes.disconnectAll();
         mAudioNodes.setup(userWinSize);
         mAudioNodes.enableInput();
-        userSpecDuration = userSpecDurSeconds; // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+        userSpecDuration = userSpecDurSeconds / ((float)userWinSize / 1000); // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
         mSpectrogramPlot.setup(userSpecDuration);
         userWinSizePrev = userWinSize;
     }
     if (userSpecDurSeconds != userSpecDurPrev)
     {
-        userSpecDuration = userSpecDurSeconds; // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+        userSpecDuration = userSpecDurSeconds / ((float)userWinSize / 1000); // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
         mSpectrogramPlot.setup(userSpecDuration);
         userSpecDurPrev = userSpecDurSeconds;
     }
@@ -183,6 +183,7 @@ void InputAnalyzer::drawFps()
 {
     std::stringstream buf;
     std::stringstream numBins;
+    std::stringstream numBinsDisp;
     std::stringstream fftSize;
     std::stringstream maxFreqDisp;
     buf << "FPS: " << ci::app::getFrameRate();
@@ -191,8 +192,10 @@ void InputAnalyzer::drawFps()
     ci::gl::drawStringRight(numBins.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 20));
     fftSize << "FFT Size: " << mAudioNodes.getFftSize();
     ci::gl::drawStringRight(fftSize.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 30));
-    maxFreqDisp << "Max Freq Displayed: " << mAudioNodes.getMaxFreqDisp();
-    ci::gl::drawStringRight(maxFreqDisp.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 40));
+    numBinsDisp << "Number of Bins Displayed: " << mSpectrogramPlot.getMaxDispBins();
+    ci::gl::drawStringRight(numBinsDisp.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 40));
+    maxFreqDisp << "Max Freq Displayed: " << mAudioNodes.getMaxFreqDisp(mSpectrogramPlot.getMaxDispBins());
+    ci::gl::drawStringRight(maxFreqDisp.str(), ci::Vec2i(ci::app::getWindowWidth() - 25, 50));
 }
 
 } //!namespace cieq

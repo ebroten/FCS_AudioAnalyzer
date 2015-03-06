@@ -8,6 +8,7 @@
 #include <cinder/Font.h>
 #include <cinder/gl/Texture.h>
 #include <cinder/PolyLine.h>
+#include <cinder/Timer.h>
 
 
 #include <vector>
@@ -61,7 +62,7 @@ protected:
 
 private:
 	void			onHorzAxisTextChange();
-	void			onVertAxisTextChange();
+    void			onVertAxisTextChange();
 };
 
 class WaveformPlot final : public Plot
@@ -101,6 +102,7 @@ public:
 
     void							drawLocal(float shift, float shiftLength) override;
     void							setup(int duration);
+    size_t                          getMaxDispBins();
 
 private:
     AudioNodes&						mAudioNodes;
@@ -108,8 +110,15 @@ private:
     ci::gl::Texture					mTexCache;
     std::size_t						mTexW, mTexH;
     std::size_t						mFrameCounter;
+    std::size_t						maxDispBins;
     int								mActiveSurface;
     int								mBackBufferSurface;
+    ci::Timer                       mTimer;
+    double                          timeEnter;
+    double                          timeExit;
+    double                          timeLine;
+    double                          timeProcess;
+    double                          timeReturn;
 };
 
 } //!namespace cieq

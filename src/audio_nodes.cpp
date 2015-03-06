@@ -4,6 +4,7 @@
 #include <cinder/audio/Context.h>
 #include <cinder/audio/MonitorNode.h>
 #include <cinder/app/App.h>
+#include <cinder/Timer.h>
 
 namespace cieq
 {
@@ -29,13 +30,23 @@ void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
     auto monitorFormat = ci::audio::MonitorNode::Format().windowSize(userWinSizeSamples); // was originally windowSize(1024)
 	mMonitorNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorNode(monitorFormat));
 	
-    auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(131072).windowSize(userWinSizeSamples); // was originally windowSize(1024), 
+    auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(122880).windowSize(userWinSizeSamples); // was originally windowSize(1024), 
     //I also changed fftSize to 131072 to ensure we get a minimum of 273 frequency bins at the minimum display frequency range setting of 0 - 100Hz
 
-	mMonitorSpectralNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    mMonitorSpectralNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    mMonitorSpectralNode2 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
 
 	mInputDeviceNode >> mMonitorNode;
-	mInputDeviceNode >> mMonitorSpectralNode;
+    mInputDeviceNode >> mMonitorSpectralNode;
+    double time = 0.0;
+    time = mTimer.getSeconds();
+    mTimer.start();
+    for (size_t i = 0; time < 0.02; i++)
+    {
+        time = mTimer.getSeconds();
+    }
+    mTimer.stop();
+    mInputDeviceNode >> mMonitorSpectralNode2;
 
 
 	if (auto_enable)
@@ -112,9 +123,9 @@ size_t AudioNodes::getFftSize()
     return mMonitorSpectralNode->getFftSize();
 }
 
-size_t AudioNodes::getMaxFreqDisp()
+size_t AudioNodes::getMaxFreqDisp(size_t binNumber)
 {
-    return mMonitorSpectralNode->getFreqForBin(3413);//getNumBins() - 1);
+    return mMonitorSpectralNode->getFreqForBin(binNumber);//getNumBins() - 1);
 }
 
 } //!cieq
