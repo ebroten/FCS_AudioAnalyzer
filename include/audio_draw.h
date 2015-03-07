@@ -111,14 +111,26 @@ private:
     std::size_t						mTexW, mTexH;
     std::size_t						mFrameCounter;
     std::size_t						maxDispBins;
+    std::size_t						maxFreqDisp;
     int								mActiveSurface;
     int								mBackBufferSurface;
     ci::Timer                       mTimer;
     double                          timeEnter;
-    double                          timeExit;
-    double                          timeLine;
-    double                          timeProcess;
+    double                          timeEnterPrev;
     double                          timeReturn;
+    double                          timeExit;
+    double                          timeProcess;
+    double                          timeHop;
+    double                          timeSec1Enter;
+    double                          timeSec1Exit;
+    double                          timeSec1Process;
+    double                          timeSec2Enter;
+    double                          timeSec2Exit;
+    double                          timeSec2Process;
+    double                          timeSec3Enter;
+    double                          timeSec3Exit;
+    double                          timeSec3Process;
+    double                          timeLine;
 };
 
 } //!namespace cieq

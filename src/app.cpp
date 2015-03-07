@@ -38,6 +38,10 @@ void InputAnalyzer::prepareSettings(Settings *settings)
 
 void InputAnalyzer::setup()
 {
+    if (mTimer.isStopped())
+    {
+        mTimer.start();
+    }
     mParams = ci::params::InterfaceGl::create(cinder::app::getWindow(), "App parameters", ci::app::toPixels(ci::Vec2i(300, 100)));
     
     mEventProcessor.addKeyboardEvent([this](char c)
@@ -52,17 +56,23 @@ void InputAnalyzer::setup()
     mGlobals.setParamsPtr(mParams.get());
 
     //Setup parameters:
-    userWinSize = 250;
+    userWinSize = 10;
     userWinSizePrev = userWinSize;
     userSpecDurSeconds = 5;
     userSpecDurPrev = userSpecDurSeconds;
-    userSpecDuration = userSpecDurSeconds / ((float)userWinSize / 1000); // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+    userSpecDuration = userSpecDurSeconds;
     userSpecDurPrev = userSpecDuration;
     userSpecMaxFreq = 10000; //Default maximum frequency display of 10kHz
     userSpecMaxFreqPrev = userSpecMaxFreq;
+    userHopSize = 13; //in Hz
+    userHopSizePrev = userHopSize;
+    userSpecDurSeconds = 5;
+    userSpecDurPrev = userSpecDurSeconds;
+    userSpecDuration = userHopSize * userSpecDurSeconds;
     shift = ((float)userWinSize / 1000) / 4;
     shiftLength = ((float)userWinSize / 1000) / 2;
     mParams->addParam("Window Size (ms)", &userWinSize).min(10).max(500).step(1);
+    mParams->addParam("Spectrogram Update Rate (Hz)", &userHopSize).min(10).max(60).step(1);
     mParams->addParam("Spectrogram Duration (2-20s)", &userSpecDurSeconds).min(2).max(20).step(1);
     mParams->addParam("Spectrogram Max Freq Display (100-10000Hz)", &userSpecMaxFreq).min(100).max(10000).step(1);
     mParams->addParam("Search Shift (s)", &shift).min(0.0f).max(0.5f).precision(3).step(0.001f);
@@ -108,6 +118,7 @@ void InputAnalyzer::setup()
 
 void InputAnalyzer::resize()
 {
+    //timeSec1Enter = mTimer.getSeconds();
 	const auto window_size = ci::app::getWindowSize();
 	const auto plot_size_width = 0.9f * window_size.x; // 90% of window width
 	const auto plot_size_height = 0.8f * 0.5f * window_size.y; // half of 90% of window width
@@ -118,47 +129,67 @@ void InputAnalyzer::resize()
     mSpectrogramPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
     mSpectrogramPlot.setup(userSpecDuration);
 
-	top_left.y += 0.5f * window_size.y;
-	mWaveformPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+	//top_left.y += 0.5f * window_size.y;
+	//mWaveformPlot.setBounds(ci::Rectf(top_left, top_left + ci::Vec2f(plot_size_width, plot_size_height)));
+    //timeSec1Exit = mTimer.getSeconds();
+    //timeSec1Process = timeSec1Exit - timeSec1Enter;
 }
 
 void InputAnalyzer::update()
 {
+    //timeSec1Enter = mTimer.getSeconds();
     if (userWinSize != userWinSizePrev)
     {
         mAudioNodes.disableInput();
         mAudioNodes.disconnectAll();
         mAudioNodes.setup(userWinSize);
         mAudioNodes.enableInput();
-        userSpecDuration = userSpecDurSeconds / ((float)userWinSize / 1000); // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+        userSpecDuration = userHopSize * userSpecDurSeconds; 
         mSpectrogramPlot.setup(userSpecDuration);
         userWinSizePrev = userWinSize;
     }
     if (userSpecDurSeconds != userSpecDurPrev)
     {
-        userSpecDuration = userSpecDurSeconds / ((float)userWinSize / 1000); // / ((float)userWinSize / 1000);//Not this simple. need to look at this more...
+        userSpecDuration = userHopSize * userSpecDurSeconds; 
         mSpectrogramPlot.setup(userSpecDuration);
         userSpecDurPrev = userSpecDurSeconds;
     }
+    //timeSec1Exit = mTimer.getSeconds();
+    //timeSec1Process = timeSec1Exit - timeSec1Enter;
 }
 
 void InputAnalyzer::draw()
 {
+    timeEnter = mTimer.getSeconds();
+    timeReturn = timeEnter - timeEnterPrev;
+    timeEnterPrev = timeEnter;
+    timeSec1Enter = mTimer.getSeconds();
     //Set background color for main window
     ci::ColorA backgroundColor = ci::ColorA::gray(0.25f, 0);
     ci::gl::clear(backgroundColor);
-	ci::gl::enableAlphaBlending();
+    ci::gl::enableAlphaBlending();
+    timeSec1Exit = mTimer.getSeconds();
+    timeSec1Process = timeSec1Exit - timeSec1Enter;
 
+    timeSec2Enter = mTimer.getSeconds();
 	//mSpectrumPlot.draw(0);
     //mWaveformPlotShifted.draw(shift, shiftLength);
-    mSpectrogramPlot.draw(0, userSpecMaxFreq);
-    mWaveformPlot.draw(0, 10);
+    mSpectrogramPlot.draw(userHopSize, userSpecMaxFreq);
+    //mWaveformPlot.draw(0, 10);
+    timeSec2Exit = mTimer.getSeconds();
+    timeSec2Process = timeSec2Exit - timeSec2Enter;
 
     //Draw parameter window:
+    timeSec3Enter = mTimer.getSeconds();
     mParams->draw();
+    timeSec3Exit = mTimer.getSeconds();
+    timeSec3Process = timeSec3Exit - timeSec3Enter;
 
     // draw framerate in FPS
+    timeSec4Enter = mTimer.getSeconds();
     drawFps();
+    timeSec4Exit = mTimer.getSeconds();
+    timeSec4Process = timeSec4Exit - timeSec4Enter;
 
 }
 
@@ -169,14 +200,20 @@ void InputAnalyzer::shutdown()
 
 void InputAnalyzer::mouseDown(ci::app::MouseEvent event)
 {
+    //timeSec1Enter = mTimer.getSeconds();
 	mEventProcessor.processMouseEvents(
 		static_cast<float>(event.getX()),
-		static_cast<float>(event.getY()));
+        static_cast<float>(event.getY()));
+    //timeSec1Exit = mTimer.getSeconds();
+    //timeSec1Process = timeSec1Exit - timeSec1Enter;
 }
 
 void InputAnalyzer::keyDown(ci::app::KeyEvent event)
 {
-	mEventProcessor.processKeybaordEvents(event.getChar());
+    //timeSec1Enter = mTimer.getSeconds();
+    mEventProcessor.processKeybaordEvents(event.getChar());
+    //timeSec1Exit = mTimer.getSeconds();
+    //timeSec1Process = timeSec1Exit - timeSec1Enter;
 }
 
 void InputAnalyzer::drawFps()

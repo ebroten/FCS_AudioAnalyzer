@@ -2,6 +2,7 @@
 #define CIEQ_INCLUDE_APP_H_
 
 #include <cinder/app/AppNative.h>
+#include <cinder/Timer.h>
 #include <functional>
 
 #include "cinder/app/AppBasic.h"
@@ -73,6 +74,25 @@ private:
     size_t                                      userSpecMaxFreqPrev;
     float                                       shift;
     float                                       shiftLength;
+    float                                       userHopSize;
+    float                                       userHopSizePrev;
+    ci::Timer                                   mTimer;
+    double                                      timeEnter;
+    double                                      timeEnterPrev;
+    double                                      timeReturn;
+    double                                      timeExit;
+    double                                      timeSec1Enter;
+    double                                      timeSec1Exit;
+    double                                      timeSec1Process;
+    double                                      timeSec2Enter;
+    double                                      timeSec2Exit;
+    double                                      timeSec2Process;
+    double                                      timeSec3Enter;
+    double                                      timeSec3Exit;
+    double                                      timeSec3Process;
+    double                                      timeSec4Enter;
+    double                                      timeSec4Exit;
+    double                                      timeSec4Process;
 };
 
 } //!cieq
