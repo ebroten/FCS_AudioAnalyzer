@@ -35,7 +35,7 @@ public:
 	AudioNodes(AppGlobals&);
 
 	// \brief initializes all nodes and connect them together
-    void												setup(size_t userWinSize, size_t fftSize, bool auto_enable = true);
+    void												setup(double userHopSize, size_t userWinSize, size_t fftSize, bool auto_enable = true);
 	// \brief enables reading from input
 	void												enableInput();
 	// \brief disables reading from input
@@ -61,6 +61,8 @@ public:
 	cinder::audio::MonitorNode* const					getMonitorNode();
 	// \brief returns a pointer to the node which is performing FFT on data
     cinder::audio::MonitorSpectralNode* const			getMonitorSpectralNode(size_t nodeNumber);
+    // Returns a pointer to the timer being used to track node start times (I hope)
+    ci::Timer* const			                        getTimer();
 
 private:
     std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode;
@@ -75,6 +77,16 @@ private:
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode8;
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode9;
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode10;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode11;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode12;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode13;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode14;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode15;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode16;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode17;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode18;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode19;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode20;
     ci::Timer                                           mTimer;
     double                                              time;
     double                                              timeNode1;
@@ -87,9 +99,20 @@ private:
     double                                              timeNode8;
     double                                              timeNode9;
     double                                              timeNode10;
+    double                                              timeNode11;
+    double                                              timeNode12;
+    double                                              timeNode13;
+    double                                              timeNode14;
+    double                                              timeNode15;
+    double                                              timeNode16;
+    double                                              timeNode17;
+    double                                              timeNode18;
+    double                                              timeNode19;
+    double                                              timeNode20;
     double                                              timeSec1Enter;
     double                                              timeSec1Exit;
     double                                              timeSec1Process;
+    //double                                              userHopSizeMs;
     size_t                                              hardwareSampleRate;
 
 private:

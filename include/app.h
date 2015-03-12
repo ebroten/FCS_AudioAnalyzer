@@ -86,10 +86,10 @@ private:
     float                                       numBins;
     float                                       shift;
     float                                       shiftLength;
-    float                                       userHopSize;
     float                                       userHopSizePrev;
     float                                       userMaxDB;
     ci::Timer                                   mTimer;
+    double                                      userHopSize;
     double                                      timeEnter;
     double                                      timeEnterPrev;
     double                                      timeReturn;
@@ -107,6 +107,7 @@ private:
     double                                      timeSec4Exit;
     double                                      timeSec4Process;
     double                                      nearestPow2;
+    double                                      userWinSizeMs;
 };
 
 } //!cieq

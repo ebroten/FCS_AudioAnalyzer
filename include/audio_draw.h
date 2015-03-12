@@ -48,9 +48,9 @@ public:
 	Plot&			setDrawBounds(bool on = true)				{ mDrawBounds = on; return *this; }
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
-    virtual	void	drawLocal(float shift, float shiftLength, float maxDB) = 0;
+    virtual	void	drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB) = 0;
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void			draw(float shift, float shiftLength, float maxDB);
+    void			draw(double winSizeMs, float shift, float shiftLength, float maxDB);
 	void			drawBounds();
 	void			drawLabels();
 
@@ -76,7 +76,7 @@ public:
 
     void					setGraphColor(const ci::ColorA& color);
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void					drawLocal(float shift, float shiftLength, float maxDB);
+    void					drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB);
 
 private:
 	ci::ColorA				mGraphColor;
@@ -90,7 +90,7 @@ public:
 
     void enableDecibelsScale(bool on = true);
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void drawLocal(float shift, float shiftLength, float maxDB);
+    void drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB);
 
 private:
 	bool					mScaleDecibels;
@@ -104,7 +104,7 @@ class SpectrogramPlot final : public Plot
 public:
     SpectrogramPlot(AudioNodes& nodes);
 
-    void							drawLocal(float shift, float shiftLength, float maxDB) override;
+    void							drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB) override;
     void							setup(int duration, size_t width);
     size_t                          getMaxDispBins();
     double                          getActualHopRate();
@@ -147,6 +147,12 @@ private:
     double                          timeSec3Exit;
     double                          timeSec3Process;
     double                          timeLine;
+    double                          timeNode1Start;
+    double                          timeNode1StartPrev;
+    double                          timeCurrentNodeStart;
+    double                          timeCurrentNodeCall;
+    double                          timeCurrentNodeQuo;
+    double                          timeCurrentNodeRem;
     double                          actualHopRate;
 };
 

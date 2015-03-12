@@ -57,8 +57,9 @@ void InputAnalyzer::setup()
     mGlobals.setParamsPtr(mParams.get());
 
     //Setup parameters:
-    userWinSize = 500;
+    userWinSize = 250;
     userWinSizePrev = userWinSize;
+    userWinSizeMs = static_cast<double>(userWinSize) / 1000;
     userSpecDurSeconds = 5;
     userSpecDurPrev = userSpecDurSeconds;
     userSpecDuration = userSpecDurSeconds;
@@ -69,7 +70,7 @@ void InputAnalyzer::setup()
     userHopSizePrev = userHopSize;
     userSpecDurSeconds = 5;
     userSpecDurPrev = userSpecDurSeconds;
-    userSpecDuration = userHopSize * userSpecDurSeconds;
+    userSpecDuration = static_cast<size_t>(userHopSize) * userSpecDurSeconds;
     userMaxDB = 100.0f;
     fftSize = 131072;
     fftSizePrev = fftSize;
@@ -102,7 +103,7 @@ void InputAnalyzer::setup()
     //}
 
     //Window size can be entered in ms now for the mAudioNodes.setup call:
-    mAudioNodes.setup(userWinSize, fftSize);
+    mAudioNodes.setup(userHopSize, userWinSize, fftSize);
 
     fftSize = mAudioNodes.getFftSize();
     hSR = static_cast<float>(mAudioNodes.getHardwareSampleRate());
@@ -166,6 +167,7 @@ void InputAnalyzer::update()
     //timeSec1Enter = mTimer.getSeconds();
     if (userWinSize != userWinSizePrev)
     {
+        userWinSizeMs = static_cast<double>(userWinSize) / 1000;
         hSR = static_cast<float>(mAudioNodes.getHardwareSampleRate());
         float minNumBins = static_cast<size_t>((pow(2, ceil(log2((static_cast<double>(userWinSize) / 1000) * static_cast<double>(hSR))))) / 2);
         float plotWidth = static_cast<float>(mSpectrogramPlot.getPlotWidth());
@@ -181,16 +183,16 @@ void InputAnalyzer::update()
         }
         mAudioNodes.disableInput();
         mAudioNodes.disconnectAll();
-        mAudioNodes.setup(userWinSize, fftSize);
+        mAudioNodes.setup(userHopSize, userWinSize, fftSize);
         mAudioNodes.enableInput();
 
         fftSize = mAudioNodes.getFftSize();
         dispBins = (fftSize * userSpecMaxFreq) / static_cast<size_t>(hSR);
         mSpectrogramPlot.setup(userSpecDuration, dispBins);
-        //userSpecDuration = userHopSize * userSpecDurSeconds; 
-        //mSpectrogramPlot.setup(userSpecDuration);
         userWinSizePrev = userWinSize;
+        userSpecDurPrev = 0; //Make sure we resize the display height just in case;
     }
+
     if (userSpecMaxFreq != userSpecMaxFreqPrev)
     {
         hSR = static_cast<float>(mAudioNodes.getHardwareSampleRate());
@@ -211,27 +213,11 @@ void InputAnalyzer::update()
 		{
 			fftSize = static_cast<size_t>(pow(2, (nearestPow2 - 1.0)));
 		}
-        //if (userSpecMaxFreq < minDispFreq)
-        //{
-        //    maxDispBins = 256;
-        //    actualMaxFreq = static_cast<size_t>(maxDispBins * ((hSR / 2) / numBins));
-        //    fftSize = (maxDispBins * hSR) / userSpecMaxFreq;
-        //}
-        //else
-        //{
-        //    while (userSpecMaxFreq > actualMaxFreq)
-        //    {
-        //        fftSize = pow(2, log2(static_cast<double>(fftSize)) - 1.0);
-        //        numBins = fftSize / 2;
-        //        //plotWidth = static_cast<float>(mSpectrogramPlot.getPlotWidth());
-        //        actualMaxFreq = static_cast<size_t>(maxDispBins * ((hSR / 2) / numBins));
-        //    }
-        //}
         if (fftSize != fftSizePrev)
         {
             mAudioNodes.disableInput();
             mAudioNodes.disconnectAll();
-            mAudioNodes.setup(userWinSize, fftSize);
+            mAudioNodes.setup(userHopSize, userWinSize, fftSize);
             mAudioNodes.enableInput();
             fftSizePrev = fftSize;
         }
@@ -239,10 +225,24 @@ void InputAnalyzer::update()
         dispBins = (fftSize * userSpecMaxFreq) / static_cast<size_t>(hSR);
         mSpectrogramPlot.setup(userSpecDuration, dispBins);
         userSpecMaxFreqPrev = userSpecMaxFreq;
+        userSpecDurPrev = 0; //Make sure we resize the display height just in case;
     }
+    if (userHopSize != userHopSizePrev)
+    {
+        mAudioNodes.disableInput();
+        mAudioNodes.disconnectAll();
+        mAudioNodes.setup(userHopSize, userWinSize, fftSize);
+        mAudioNodes.enableInput();
+        fftSize = mAudioNodes.getFftSize();
+        dispBins = (fftSize * userSpecMaxFreq) / static_cast<size_t>(hSR);
+        mSpectrogramPlot.setup(userSpecDuration, dispBins);
+        userHopSizePrev = userHopSize;
+        userSpecDurPrev = 0; //Make sure we resize the display height just in case;
+    }
+
     if (userSpecDurSeconds != userSpecDurPrev)
     {
-        userSpecDuration = userHopSize * userSpecDurSeconds; 
+        userSpecDuration = static_cast<size_t>(userHopSize) * userSpecDurSeconds; 
         mSpectrogramPlot.setup(userSpecDuration, dispBins);
         userSpecDurPrev = userSpecDurSeconds;
     }
@@ -268,7 +268,7 @@ void InputAnalyzer::draw()
         timeSec2Enter = mTimer.getSeconds();
         //mSpectrumPlot.draw(0, 0, 0);
         //mWaveformPlotShifted.draw(shift, shiftLength, userMaxDB);
-        mSpectrogramPlot.draw(userHopSize, userSpecMaxFreq, userMaxDB);
+        mSpectrogramPlot.draw(userWinSizeMs, static_cast<float>(userHopSize), userSpecMaxFreq, userMaxDB);
         //mWaveformPlot.draw(0, 10, 0);
         timeSec2Exit = mTimer.getSeconds();
         timeSec2Process = timeSec2Exit - timeSec2Enter;

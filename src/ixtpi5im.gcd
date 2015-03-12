@@ -59,9 +59,9 @@ Plot::Plot()
     , mBoundsColor(0.5f, 0.5f, 0.5f, 1)
 {}
 
-void Plot::draw(double winSizeMs, float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
+void Plot::draw(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
-    drawLocal(winSizeMs, shift, shiftLength, maxDB);
+    drawLocal(shift, shiftLength, maxDB);
 
 	if (mDrawBounds)
 	{
@@ -123,7 +123,7 @@ SpectrumPlot::SpectrumPlot(AudioNodes& nodes)
 }
 
 // original draw function is from Cinder examples _audio/common
-void SpectrumPlot::drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
+void SpectrumPlot::drawLocal(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
 	auto& spectrum = mAudioNodes.getMonitorSpectralNode(1)->getMagSpectrum();
 	
@@ -195,7 +195,7 @@ void WaveformPlot::setGraphColor(const ci::ColorA& color)
 }
 
 // original draw function is from Cinder examples _audio/common
-void WaveformPlot::drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
+void WaveformPlot::drawLocal(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
     auto& buffer = mAudioNodes.getMonitorNode()->getBuffer();
     size_t hardwareSampleRate = 0;
@@ -283,7 +283,7 @@ SpectrogramPlot::SpectrogramPlot(AudioNodes& nodes)
     setVertAxisTitle("Time").setVertAxisUnit("s");
 }
 
-void SpectrogramPlot::drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB)
+void SpectrogramPlot::drawLocal(float shift, float shiftLength, float maxDB)
 {
     if (mTimer.isStopped())
     {
@@ -308,7 +308,7 @@ void SpectrogramPlot::drawLocal(double winSizeMs, float shift, float shiftLength
         timeEnter = mAudioNodes.getTimer()->getSeconds();
         timeReturn = timeEnter - timeNode1Start;
         timeHop = timeReturn;
-        while (timeHop < winSizeMs)
+        while (timeHop < 0.25)
         {
             timeHop = timeReturn + (mAudioNodes.getTimer()->getSeconds() - timeEnter);
         }
@@ -329,27 +329,16 @@ void SpectrogramPlot::drawLocal(double winSizeMs, float shift, float shiftLength
 
     timeSec1Enter = mTimer.getSeconds();
     cinder::audio::MonitorSpectralNode* const mMonitorSpectralNode = mAudioNodes.getMonitorSpectralNode(nodeNumber);
-    timeSec1Exit = mTimer.getSeconds();
-    timeSec1Process = timeSec1Exit - timeSec1Enter;
-    timeCurrentNodeStart = mAudioNodes.getTimeOfNode(nodeNumber);
-    timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
-    timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
-    //timeCurrentNodeRem = remainder(0.249, winSizeMs);
-    while (timeCurrentNodeRem < -0.001) //|| timeCurrentNodeRem > 0.001
-    {
-        timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
-        timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
-    }
-    timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
-    timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
-    timeSec2Enter = mTimer.getSeconds();
-    spectrum = mMonitorSpectralNode->getMagSpectrum();//Might be able to free up some speed by initializing this somehow rather than letting it create a
-                                                      //new "auto" array every time it comes in here. Nope, it's getting the magSpectrum data that's slow.
     nodeNumber++;
     if (nodeNumber > 10)
     {
         nodeNumber = 1;
     }
+    timeSec1Exit = mTimer.getSeconds();
+    timeSec1Process = timeSec1Exit - timeSec1Enter;
+    timeSec2Enter = mTimer.getSeconds();
+    spectrum = mMonitorSpectralNode->getMagSpectrum();//Might be able to free up some speed by initializing this somehow rather than letting it create a
+                                                      //new "auto" array every time it comes in here. Nope, it's getting the magSpectrum data that's slow.
     timeSec2Exit = mTimer.getSeconds();
     timeSec2Process = timeSec2Exit - timeSec2Enter;
     plotWidth = mBounds.x2 - mBounds.x1;

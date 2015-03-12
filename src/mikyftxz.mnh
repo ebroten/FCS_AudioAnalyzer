@@ -333,13 +333,13 @@ void SpectrogramPlot::drawLocal(double winSizeMs, float shift, float shiftLength
     timeSec1Process = timeSec1Exit - timeSec1Enter;
     timeCurrentNodeStart = mAudioNodes.getTimeOfNode(nodeNumber);
     timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
-    timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
-    //timeCurrentNodeRem = remainder(0.249, winSizeMs);
-    while (timeCurrentNodeRem < -0.001) //|| timeCurrentNodeRem > 0.001
-    {
-        timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
-        timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
-    }
+    //timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
+    timeCurrentNodeRem = remainder(0.999, winSizeMs);
+    //while (timeCurrentNodeRem > 0 && timeCurrentNodeRem < 0.25)
+    //{
+    //    timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
+    //    timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
+    //}
     timeCurrentNodeCall = mAudioNodes.getTimer()->getSeconds();
     timeCurrentNodeRem = remainder(timeCurrentNodeCall - timeCurrentNodeStart, winSizeMs);
     timeSec2Enter = mTimer.getSeconds();

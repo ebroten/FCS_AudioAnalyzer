@@ -14,7 +14,7 @@ AudioNodes::AudioNodes(AppGlobals& globals)
     , mIsEnabled(false)
 {}
 
-void AudioNodes::setup(size_t userWinSize, size_t fftSize, bool auto_enable /*= true*/)
+void AudioNodes::setup(double userHopSize, size_t userWinSize, size_t fftSize, bool auto_enable /*= true*/)
 {
     hardwareSampleRate = 0;
     if (mInputDeviceNode == NULL)
@@ -43,7 +43,18 @@ void AudioNodes::setup(size_t userWinSize, size_t fftSize, bool auto_enable /*= 
     mMonitorSpectralNode8 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     mMonitorSpectralNode9 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     mMonitorSpectralNode10 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode11 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode12 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode13 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode14 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode15 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode16 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode17 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode18 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode19 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    //mMonitorSpectralNode20 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
 
+    double userHopSizeMs = (1 / userHopSize);
     if (mTimer.isStopped())
     {
         mTimer.start();
@@ -54,60 +65,120 @@ void AudioNodes::setup(size_t userWinSize, size_t fftSize, bool auto_enable /*= 
     //time = mTimer.getSeconds();
     size_t i;
     timeNode1 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode1;
     }
     mInputDeviceNode >> mMonitorSpectralNode2;
     timeNode2 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode2;
     }
     mInputDeviceNode >> mMonitorSpectralNode3;
     timeNode3 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode3;
     }
     mInputDeviceNode >> mMonitorSpectralNode4;
     timeNode4 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode4;
     }
     mInputDeviceNode >> mMonitorSpectralNode5;
     timeNode5 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode5;
     }
     mInputDeviceNode >> mMonitorSpectralNode6;
     timeNode6 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode6;
     }
     mInputDeviceNode >> mMonitorSpectralNode7;
     timeNode7 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode7;
     }
     mInputDeviceNode >> mMonitorSpectralNode8;
     timeNode8 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode8;
     }
     mInputDeviceNode >> mMonitorSpectralNode9;
     timeNode9 = mTimer.getSeconds();
-    for (i = 0; time < 0.05; i++)
+    for (i = 0; time < userHopSizeMs; i++)
     {
         time = mTimer.getSeconds() - timeNode9;
     }
     mInputDeviceNode >> mMonitorSpectralNode10;
     timeNode10 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode10;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode11;
+    //timeNode11 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode11;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode12;
+    //timeNode12 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode12;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode13;
+    //timeNode13 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode13;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode14;
+    //timeNode14 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode14;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode15;
+    //timeNode15 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode15;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode16;
+    //timeNode16 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode16;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode17;
+    //timeNode17 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode17;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode18;
+    //timeNode18 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode18;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode19;
+    //timeNode19 = mTimer.getSeconds();
+    //for (i = 0; time < userHopSizeMs; i++)
+    //{
+    //    time = mTimer.getSeconds() - timeNode19;
+    //}
+    //mInputDeviceNode >> mMonitorSpectralNode20;
+    //timeNode20 = mTimer.getSeconds();
 
 	if (auto_enable)
 	{
@@ -159,6 +230,11 @@ cinder::audio::MonitorSpectralNode* const AudioNodes::getMonitorSpectralNode(siz
         return mMonitorSpectralNode10.get();
     }
     return mMonitorSpectralNode.get(); //mMonitorSpectralNode.get();
+}
+
+ci::Timer* const AudioNodes::getTimer()
+{
+    return &mTimer;
 }
 
 void AudioNodes::enableInput()
