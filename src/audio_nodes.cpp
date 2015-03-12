@@ -14,9 +14,9 @@ AudioNodes::AudioNodes(AppGlobals& globals)
     , mIsEnabled(false)
 {}
 
-void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
+void AudioNodes::setup(size_t userWinSize, size_t fftSize, bool auto_enable /*= true*/)
 {
-    size_t hardwareSampleRate = 0;
+    hardwareSampleRate = 0;
     if (mInputDeviceNode == NULL)
     {
         mInputDeviceNode = mGlobals.getAudioContext().createInputDeviceNode();
@@ -30,7 +30,7 @@ void AudioNodes::setup(size_t userWinSize, bool auto_enable /*= true*/)
     auto monitorFormat = ci::audio::MonitorNode::Format().windowSize(userWinSizeSamples); // was originally windowSize(1024)
 	mMonitorNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorNode(monitorFormat));
 	
-    auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(122880).windowSize(userWinSizeSamples); // was originally windowSize(1024), 
+    auto monitorSpectralFormat = ci::audio::MonitorSpectralNode::Format().fftSize(fftSize).windowSize(userWinSizeSamples); // was originally windowSize(1024), 
     //I also changed fftSize to 131072 to ensure we get a minimum of 273 frequency bins at the minimum display frequency range setting of 0 - 100Hz
 
     mMonitorSpectralNode = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
@@ -67,7 +67,15 @@ cinder::audio::MonitorNode* const AudioNodes::getMonitorNode()
 
 cinder::audio::MonitorSpectralNode* const AudioNodes::getMonitorSpectralNode()
 {
-	return mMonitorSpectralNode.get();
+    //if (mTimer.isStopped())
+    //{
+    //    mTimer.start();
+    //}
+    //timeSec1Enter = mTimer.getSeconds();
+    //cinder::audio::MonitorSpectralNode* const getMonitorSpectralNodeTemp = mMonitorSpectralNode.get();
+    //timeSec1Exit = mTimer.getSeconds();
+    //timeSec1Process = timeSec1Exit - timeSec1Enter;
+    return mMonitorSpectralNode.get(); //mMonitorSpectralNode.get();
 }
 
 void AudioNodes::enableInput()
@@ -126,6 +134,11 @@ size_t AudioNodes::getFftSize()
 size_t AudioNodes::getMaxFreqDisp(size_t binNumber)
 {
     return mMonitorSpectralNode->getFreqForBin(binNumber);//getNumBins() - 1);
+}
+
+size_t AudioNodes::getHardwareSampleRate()
+{
+    return hardwareSampleRate;
 }
 
 } //!cieq

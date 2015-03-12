@@ -13,6 +13,10 @@
 
 #include <vector>
 #include <array>
+#include <sstream>
+
+using namespace ci;
+using namespace std;
 
 namespace cinder 
 {
@@ -44,9 +48,9 @@ public:
 	Plot&			setDrawBounds(bool on = true)				{ mDrawBounds = on; return *this; }
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
-    virtual	void	drawLocal(float shift, float shiftLength) = 0;
+    virtual	void	drawLocal(float shift, float shiftLength, float maxDB) = 0;
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void			draw(float shift, float shiftLength);
+    void			draw(float shift, float shiftLength, float maxDB);
 	void			drawBounds();
 	void			drawLabels();
 
@@ -72,7 +76,7 @@ public:
 
     void					setGraphColor(const ci::ColorA& color);
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void					drawLocal(float shift, float shiftLength);
+    void					drawLocal(float shift, float shiftLength, float maxDB);
 
 private:
 	ci::ColorA				mGraphColor;
@@ -86,7 +90,7 @@ public:
 
     void enableDecibelsScale(bool on = true);
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void drawLocal(float shift, float shiftLength);
+    void drawLocal(float shift, float shiftLength, float maxDB);
 
 private:
 	bool					mScaleDecibels;
@@ -100,20 +104,32 @@ class SpectrogramPlot final : public Plot
 public:
     SpectrogramPlot(AudioNodes& nodes);
 
-    void							drawLocal(float shift, float shiftLength) override;
-    void							setup(int duration);
+    void							drawLocal(float shift, float shiftLength, float maxDB) override;
+    void							setup(int duration, size_t width);
     size_t                          getMaxDispBins();
+    double                          getActualHopRate();
+    size_t                          getPlotWidth();
 
 private:
     AudioNodes&						mAudioNodes;
-    std::array<ci::Surface32f, 2>	mSpectrals;
-    ci::gl::Texture					mTexCache;
+    std::vector<float>              spectrum;
+    //Surface32f::Iter                getSurfaceIter(Surface32f *surface);
+    std::array<Surface32f, 2>   	mSpectrals;
+    gl::Texture					    mTexCache;
     std::size_t						mTexW, mTexH;
     std::size_t						mFrameCounter;
     std::size_t						maxDispBins;
     std::size_t						maxFreqDisp;
+    std::size_t                     flag;
+    std::size_t                     pixelsPerBin;
+    std::size_t                     binSkipMult;
+    std::size_t                     plotWidth;
+    std::size_t                     fftSize;
+    std::size_t                     numBins;
+    std::size_t                     hardwareSampleRate;
     int								mActiveSurface;
     int								mBackBufferSurface;
+    float                           pixelSpecMag;
     ci::Timer                       mTimer;
     double                          timeEnter;
     double                          timeEnterPrev;
@@ -131,6 +147,7 @@ private:
     double                          timeSec3Exit;
     double                          timeSec3Process;
     double                          timeLine;
+    double                          actualHopRate;
 };
 
 } //!namespace cieq

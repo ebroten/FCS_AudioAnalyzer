@@ -35,7 +35,7 @@ public:
 	AudioNodes(AppGlobals&);
 
 	// \brief initializes all nodes and connect them together
-    void												setup(size_t userWinSize, bool auto_enable = true);
+    void												setup(size_t userWinSize, size_t fftSize, bool auto_enable = true);
 	// \brief enables reading from input
 	void												enableInput();
 	// \brief disables reading from input
@@ -56,7 +56,8 @@ public:
 	// \brief returns a pointer to the node which is having raw data in it
 	cinder::audio::MonitorNode* const					getMonitorNode();
 	// \brief returns a pointer to the node which is performing FFT on data
-	cinder::audio::MonitorSpectralNode* const			getMonitorSpectralNode();
+    cinder::audio::MonitorSpectralNode* const			getMonitorSpectralNode();
+    size_t                                              getHardwareSampleRate();
 
 private:
     std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode;
@@ -65,6 +66,10 @@ private:
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode;
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode2;
     ci::Timer                                           mTimer;
+    double                                              timeSec1Enter;
+    double                                              timeSec1Exit;
+    double                                              timeSec1Process;
+    size_t                                              hardwareSampleRate;
 
 private:
 	AppGlobals&											mGlobals;

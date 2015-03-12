@@ -9,18 +9,59 @@
 #include <cinder/gl/TextureFont.h>
 #include <cinder/app/App.h>
 #include <cinder/Area.h>
+#include "cinder/app/AppBasic.h"
+#include "cinder/ImageIo.h"
+#include "cinder/gl/gl.h"
+#include "cinder/gl/Texture.h"
 
 namespace cieq
 {
+
+    namespace 
+    {
+        //! A Matlab "Jet" palleted color composition implementation, adapted to Cinder.
+        //! \note original work: http://paulbourke.net/texture_colour/colourspace/
+        //! \note taken from: http://stackoverflow.com/a/7811134/1055628
+        static inline ci::Color GetColor(float v, float vmin, float vmax)
+        {
+            ci::Color c{ ci::Color::white() }; // white
+            float dv;
+
+            if (v < vmin)
+                v = vmin;
+            if (v > vmax)
+                v = vmax;
+            dv = vmax - vmin;
+
+            if (v < (vmin + 0.25f * dv)) {
+                c.r = 0.0f;
+                c.g = 4.0f * (v - vmin) / dv;
+            }
+            else if (v < (vmin + 0.5f * dv)) {
+                c.r = 0.0f;
+                c.b = 1.0f + 4.0f * (vmin + 0.25f * dv - v) / dv;
+            }
+            else if (v < (vmin + 0.75f * dv)) {
+                c.r = 4.0f * (v - vmin - 0.5f * dv) / dv;
+                c.b = 0.0f;
+            }
+            else {
+                c.g = 1.0f + 4.0f * (vmin + 0.75f * dv - v) / dv;
+                c.b = 0.0f;
+            }
+
+            return c;
+        }
+    }
 
 Plot::Plot()
     : mDrawBounds(true)
     , mBoundsColor(0.5f, 0.5f, 0.5f, 1)
 {}
 
-void Plot::draw(float shift, float shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
+void Plot::draw(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
-    drawLocal(shift, shiftLength);
+    drawLocal(shift, shiftLength, maxDB);
 
 	if (mDrawBounds)
 	{
@@ -82,7 +123,7 @@ SpectrumPlot::SpectrumPlot(AudioNodes& nodes)
 }
 
 // original draw function is from Cinder examples _audio/common
-void SpectrumPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
+void SpectrumPlot::drawLocal(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
 	auto& spectrum = mAudioNodes.getMonitorSpectralNode()->getMagSpectrum();
 	
@@ -154,7 +195,7 @@ void WaveformPlot::setGraphColor(const ci::ColorA& color)
 }
 
 // original draw function is from Cinder examples _audio/common
-void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shift' to hopefully allow for window shifting
+void WaveformPlot::drawLocal(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
     auto& buffer = mAudioNodes.getMonitorNode()->getBuffer();
     size_t hardwareSampleRate = 0;
@@ -215,21 +256,17 @@ void WaveformPlot::drawLocal(float shift, float shiftLength) //Added 'size_t shi
 	}
 }
 
-void SpectrogramPlot::setup(int duration)
+void SpectrogramPlot::setup(int duration, size_t width)
 {
     Plot::setup();
-    //Original
-    //mTexW = mAudioNodes.getMonitorSpectralNode()->getNumBins();
-    mTexW = mBounds.x2 - mBounds.x1;
+    mTexW = width; // mAudioNodes.getMonitorSpectralNode()->getNumBins(); //mBounds.x2 - mBounds.x1;
     //swap out the texture every "duration" seconds
-    //Original
-    mTexH = static_cast<std::size_t>(duration);//ci::app::getFrameRate()
-    //mTexH = duration;
+    mTexH = static_cast<std::size_t>(duration);
 
-    mSpectrals[0] = ci::Surface32f(mTexW, mTexH, false);
-    mSpectrals[1] = ci::Surface32f(mTexW, mTexH, false);
-
-    mTexCache = ci::gl::Texture(mSpectrals.back());
+    mSpectrals[0] = Surface32f(mTexW, mTexH, false, SurfaceChannelOrder::RGBA);
+    mSpectrals[1] = Surface32f(mTexW, mTexH, false, SurfaceChannelOrder::RGBA);
+    mTexCache = gl::Texture(mSpectrals.back());
+    //gl::scale(mTexCache);  !!Need to check this out!!
 }
 
 SpectrogramPlot::SpectrogramPlot(AudioNodes& nodes)
@@ -245,7 +282,7 @@ SpectrogramPlot::SpectrogramPlot(AudioNodes& nodes)
     setVertAxisTitle("Time").setVertAxisUnit("s");
 }
 
-void SpectrogramPlot::drawLocal(float shift, float shiftLength)
+void SpectrogramPlot::drawLocal(float shift, float shiftLength, float maxDB)
 {
     if (mTimer.isStopped())
     {
@@ -253,6 +290,16 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength)
         timeEnterPrev = 0;
         timeExit = 0;
         mTimer.start();
+
+        //Variables that can be initialized with constants:
+        pixelSpecMag = 0.0;
+        flag = 0;
+        pixelsPerBin = 1;
+        binSkipMult = 1;
+        hardwareSampleRate = 0;
+
+        //Variables that only need to be initialized on start-up (I hope):
+        hardwareSampleRate = mAudioNodes.getInputDeviceNode()->getSampleRate(); //Get current sample rate of audio hardware
     }
     timeEnter = mTimer.getSeconds();
     timeReturn = timeEnter - timeEnterPrev;
@@ -262,77 +309,105 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength)
         timeHop = timeReturn + (mTimer.getSeconds() - timeEnter);
     }
     timeEnterPrev = mTimer.getSeconds();
+    numBins = mAudioNodes.getMonitorSpectralNode()->getNumBins();
+    //maxDispBins = numBins;
+    maxDispBins = mTexW;
+    fftSize = mAudioNodes.getMonitorSpectralNode()->getFftSize();
+    actualHopRate = 1 / timeHop;
     timeSec1Enter = mTimer.getSeconds();
-    auto spectrum = mAudioNodes.getMonitorSpectralNode()->getMagSpectrum(); //Might be able to free up some speed by initializing this somehow rather than letting it create a new "auto" array every time it comes in here.
+    cinder::audio::MonitorSpectralNode* const mMonitorSpectralNode = mAudioNodes.getMonitorSpectralNode();
     timeSec1Exit = mTimer.getSeconds();
     timeSec1Process = timeSec1Exit - timeSec1Enter;
     timeSec2Enter = mTimer.getSeconds();
-    float pixelSpecMag = 0.0;
-    std::size_t flag = 0;
-    std::size_t pixelsPerBin = 1;
-    std::size_t plotWidth = mBounds.x2 - mBounds.x1;
-    maxDispBins = mAudioNodes.getMonitorSpectralNode()->getNumBins();
+    spectrum = mMonitorSpectralNode->getMagSpectrum();//Might be able to free up some speed by initializing this somehow rather than letting it create a
+                                                      //new "auto" array every time it comes in here. Nope, it's getting the magSpectrum data that's slow.
     timeSec2Exit = mTimer.getSeconds();
     timeSec2Process = timeSec2Exit - timeSec2Enter;
+    plotWidth = mBounds.x2 - mBounds.x1;
     timeSec3Enter = mTimer.getSeconds();
-    std::size_t binSkipMult = 1;
-    std::size_t fftSize = mAudioNodes.getMonitorSpectralNode()->getFftSize();
-    std::size_t numBins = mAudioNodes.getMonitorSpectralNode()->getNumBins();
-    size_t hardwareSampleRate = 0;
-    //Get current sample rate of audio hardware:
-    hardwareSampleRate = mAudioNodes.getInputDeviceNode()->getSampleRate();
+    //shiftLength = shiftLength + 0.1*shiftLength;
+    //if (shiftLength > 0)
+    //{
+    //    maxDispBins = shiftLength / ((static_cast<float>(hardwareSampleRate) / 2) / static_cast<float>(numBins));
+    //}
+	//maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+	//if (maxFreqDisp > static_cast<size_t>(shiftLength))
+	//{
+ //       maxDispBins = (shiftLength * fftSize) / hardwareSampleRate;
+ //       maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+	//	while (maxFreqDisp > static_cast<size_t>(shiftLength))
+	//	{
+	//		maxDispBins--;
+	//		maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+	//	}
+	//	maxDispBins++;
+	//}
+ //   if (maxDispBins <= plotWidth)
+ //   {
+ //       pixelsPerBin = ceil(static_cast<double>(plotWidth) / static_cast<double>(maxDispBins));
+ //       maxDispBins = ceil(static_cast<double>(plotWidth) / static_cast<double>(pixelsPerBin));
+ //       maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+ //       while (maxFreqDisp < shiftLength)
+ //       {
+ //           pixelsPerBin--;
+	//		if (pixelsPerBin < 1)
+	//		{
+	//			pixelsPerBin = 1;
+	//		}
+ //           //pixelsPerBin = ceil(static_cast<double>(plotWidth) / static_cast<double>(maxDispBins));
+ //           maxDispBins = ceil(static_cast<double>(plotWidth) / static_cast<double>(pixelsPerBin));
+ //           maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+ //       }
+ //   }
+ //   else
+ //   {
+ //       binSkipMult = floor(static_cast<double>(maxDispBins) / static_cast<double>(plotWidth));
+ //       maxDispBins = plotWidth * binSkipMult;
+ //       maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+ //       while (maxFreqDisp < shiftLength)
+ //       {
+ //           binSkipMult++;
+ //           maxDispBins = plotWidth * binSkipMult;
+ //           maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
+ //       }
+ //   }
     timeSec3Exit = mTimer.getSeconds();
     timeSec3Process = timeSec3Exit - timeSec3Enter;
-    shiftLength = shiftLength + 0.1*shiftLength;
-    if (shiftLength > 0)
-    {
-        maxDispBins = shiftLength / ((static_cast<float>(hardwareSampleRate) / 2) / static_cast<float>(numBins));
-    }
-    if (maxDispBins < plotWidth)
-    {
-        pixelsPerBin = ceil(static_cast<double>(plotWidth) / static_cast<double>(maxDispBins));
-        maxDispBins = ceil(static_cast<double>(plotWidth) / static_cast<double>(pixelsPerBin));
-        maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
-        while (maxFreqDisp < shiftLength)
-        {
-            maxDispBins++;
-            pixelsPerBin = ceil(static_cast<double>(plotWidth) / static_cast<double>(maxDispBins));
-            //maxDispBins = ceil(static_cast<double>(plotWidth) / static_cast<double>(pixelsPerBin));
-            maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
-        }
-    }
-    else
-    {
-        binSkipMult = floor(static_cast<double>(maxDispBins) / static_cast<double>(plotWidth));
-        maxDispBins = plotWidth * binSkipMult;
-        maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
-        while (maxFreqDisp < shiftLength)
-        {
-            binSkipMult++;
-            maxDispBins = plotWidth * binSkipMult;
-            maxFreqDisp = mAudioNodes.getMaxFreqDisp(maxDispBins);
-        }
-    }
 
     if (spectrum.empty())
         return;
-
-    auto surface_iter = mSpectrals[mActiveSurface].getIter();
+    //Surface32f currentSurface = mSpectrals[mActiveSurface];
+    //Surface32f *currentSurfacePtr = &currentSurface;
+    //Area area = currentSurface.getBounds();
+    //Surface32f::Iter surface_iter = currentSurfacePtr->getIter();//
+    Surface32f::Iter surface_iter = mSpectrals[mActiveSurface].getIter();//
     while (surface_iter.line())
     {
         if (surface_iter.mY != mFrameCounter) continue;
         //Original code:
         //while (surface_iter.pixel())
         //{
-        //    auto m = ci::audio::linearToDecibel(spectrum[surface_iter.mX]) / 100;
-        //    surface_iter.r() = m;
-        //    surface_iter.g() = m;
-        //    surface_iter.b() = 1.0f - m;
+        //    //Original Code:
+        //    //const auto m = spectrum[surface_iter.mX] / 100;
+        //    //surface_iter.r() = 1.0f; // (surface_iter.mX + 1) * (1 / mTexW);
+        //    //surface_iter.g() = 0; // (surface_iter.mX + 1) * (1 / mTexW);
+        //    //surface_iter.b() = static_cast<float>((surface_iter.mX + 1000) * (1 / mTexW));
+        //    //surface_iter.a() = 1.0f;
+        //    pixelSpecMag = spectrum[surface_iter.mX];
+        //    //auto m = pixelSpecMag * maxDB; // ci::audio::linearToDecibel(pixelSpecMag) / maxDB; //pixelSpecMag
+        //    //surface_iter.r() = m; //Why is red disabled???!!!
+        //    //surface_iter.g() = m;
+        //    //surface_iter.b() = 1.0f - m;
+        //    auto m = maxDB * pixelSpecMag;
+        //    auto c = GetColor(m, 0.0f, 1.0f);
+        //    surface_iter.r() = c.r;
+        //    surface_iter.g() = c.g;
+        //    surface_iter.b() = c.b;
         //}
         //My modifications:
         for (std::size_t i0 = 0; i0 < maxDispBins; i0++)
         {
-            if (i0 == maxDispBins - 1)
+            if ((i0 * binSkipMult) == maxDispBins - 25)
             {
                 flag = 1;
             }
@@ -344,12 +419,23 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength)
             {
                 if (surface_iter.pixel())
                 {
-                    pixelSpecMag = spectrum[i0 * binSkipMult];
-                    auto m = ci::audio::linearToDecibel(pixelSpecMag) / 100; //pixelSpecMag
-                    surface_iter.r() = m;
-                    surface_iter.g() = m;
-                    surface_iter.b() = 1.0f - m;
-                    //surface_iter.pixel();
+                    pixelSpecMag = spectrum[i0];
+                    //auto m = pixelSpecMag * maxDB; // ci::audio::linearToDecibel(pixelSpecMag) / maxDB; //pixelSpecMag
+                    //surface_iter.r() = m; //Why is red disabled???!!!
+                    //surface_iter.g() = m;
+                    //surface_iter.b() = 1.0f - m;
+                    auto m = maxDB * pixelSpecMag;
+                    auto c = GetColor(m, 0.0f, 1.0f);
+                    surface_iter.r() = c.r;
+                    surface_iter.g() = c.g;
+                    surface_iter.b() = c.b;
+                    surface_iter.a() = 1.0f;
+                }
+                else
+                {
+                    flag = 1;
+                    //maxDispBins = i0 * binSkipMult;
+                    maxDispBins = i0;
                 }
             }
         }
@@ -360,16 +446,30 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength)
     const auto height_offset = (mFrameCounter) * (mBounds.getHeight() / mTexH);
     const auto available_height = mBounds.getHeight() - height_offset;
 
-    timeSec3Enter = mTimer.getSeconds();
-    ci::gl::draw(mSpectrals[mActiveSurface], mBounds);
     ci::Area requested_area(0, mFrameCounter, mTexW, mTexH);//mTexW, mTexH
     ci::Rectf requested_rect(mBounds.x1, mBounds.y1 + height_offset, mBounds.x2, mBounds.y2);
-    ci::gl::draw(mTexCache, requested_area, requested_rect);
+    ci::gl::draw(mSpectrals[mActiveSurface], mBounds); // (mSpectrals[mActiveSurface], mBounds)
+    ci::gl::draw(mTexCache, requested_area, requested_rect); // (mTexCache, requested_area, requested_rect)
+
+    timeSec3Enter = mTimer.getSeconds();
+    //gl::scale(
+    //    static_cast<float>((mBounds.x2 - mBounds.x1) / mSpectrals[mActiveSurface].getWidth()),
+    //    static_cast<float>((mBounds.y2 - mBounds.y1) / mSpectrals[mActiveSurface].getHeight()));
+    //Playing around with scaling:
+    //ci::Area requested_area(0, mFrameCounter, mTexW, mTexH);//mTexW, mTexH
+    //ci::Rectf requested_rect(mBounds.x1, mBounds.y1 + height_offset, mBounds.x2, mBounds.y2);
+    //gl::pushMatrices();
+    //ci::gl::draw(mSpectrals[mActiveSurface], mBounds); // (mSpectrals[mActiveSurface], mBounds)
+    //ci::gl::draw(mTexCache, ci::Vec2f(mBounds.x1, mFrameCounter)); // (mTexCache, requested_area, requested_rect)
+    //gl::scale(
+    //    0.5,  // static_cast<float>((mBounds.x2 - mBounds.x1) / mTexCache.getWidth()),
+    //    1); // static_cast<float>((mBounds.y2 - mBounds.y1) / mTexCache.getHeight())
+    //gl::popMatrices();
 
     mFrameCounter++;
     //mFrameCounter = mFrameCounter + 2;
 
-
+    
     if (mFrameCounter >= mTexH) //mTexH
     {
         mFrameCounter = 0;
@@ -382,9 +482,25 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength)
     timeLine = mTimer.getSeconds();
 }
 
+//Surface32f::Iter getSurfaceIter(Surface32f *surface)
+//{
+//    Area area = Area(0, 0, surface->getWidth(), surface->getHeight());
+//    return surface->getIter(area);
+//}
+
 size_t SpectrogramPlot::getMaxDispBins()
 {
     return maxDispBins;
+}
+
+double SpectrogramPlot::getActualHopRate()
+{
+    return actualHopRate;
+}
+
+size_t SpectrogramPlot::getPlotWidth()
+{
+    return plotWidth;
 }
 
 } //!namespace cieq

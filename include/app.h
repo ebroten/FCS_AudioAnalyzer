@@ -47,6 +47,8 @@ public:
     //void		mouseDrag(ci::app::MouseEvent event) override final;
     //! gets fired on keyboard click
 	void		keyDown(ci::app::KeyEvent event) override final;
+    // Toggles boolean flag used to pause display updating
+    void        togglePauseDrawing();
 
 	AppGlobals&	getGlobals() { return mGlobals; }
 
@@ -65,6 +67,8 @@ private:
     SpectrogramPlot	                            mSpectrogramPlot;
     //! cinder's param ref, for tweaking variables during runtime
     ci::params::InterfaceGlRef                  mParams;
+    bool                                        linearDbMode;
+    bool                                        pauseDrawing;
     size_t                                      userWinSize;
     size_t                                      userWinSizePrev;
     size_t                                      userSpecDuration;
@@ -72,10 +76,19 @@ private:
     size_t                                      userSpecDurPrev;
     size_t                                      userSpecMaxFreq;
     size_t                                      userSpecMaxFreqPrev;
+    size_t                                      fftSize;
+    size_t                                      fftSizePrev;
+    size_t                                      dispBins;
+    size_t                                      actualMaxFreq;
+    size_t                                      nearestFft;
+    size_t                                      linearMult;
+    float                                       hSR;
+    float                                       numBins;
     float                                       shift;
     float                                       shiftLength;
     float                                       userHopSize;
     float                                       userHopSizePrev;
+    float                                       userMaxDB;
     ci::Timer                                   mTimer;
     double                                      timeEnter;
     double                                      timeEnterPrev;
@@ -93,6 +106,7 @@ private:
     double                                      timeSec4Enter;
     double                                      timeSec4Exit;
     double                                      timeSec4Process;
+    double                                      nearestPow2;
 };
 
 } //!cieq
