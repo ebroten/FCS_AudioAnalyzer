@@ -113,11 +113,11 @@ public:
 private:
     AudioNodes&						mAudioNodes;
     std::vector<float>              spectrum;
-    //Surface32f::Iter                getSurfaceIter(Surface32f *surface);
     std::array<Surface32f, 2>   	mSpectrals;
     gl::Texture					    mTexCache;
     std::size_t						mTexW, mTexH;
     std::size_t						mFrameCounter;
+    std::size_t						nodeNumber;
     std::size_t						maxDispBins;
     std::size_t						maxFreqDisp;
     std::size_t                     flag;

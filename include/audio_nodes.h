@@ -50,22 +50,43 @@ public:
     size_t                                              getFftSize();
     //Get the frequency of the last frequency bin in the current monitorSpectralNode
     size_t                                              getMaxFreqDisp(size_t binNumber);
+    //Get the sample rate of the audio input device hardware on this machine
+    size_t                                              getHardwareSampleRate();
+    //Get the time stamp for when a given node was established and connected
+    double                                              getTimeOfNode(size_t nodeNumber);
 
 	// \brief returns a pointer to the node which is reading data from input
 	cinder::audio::InputDeviceNode* const				getInputDeviceNode();
 	// \brief returns a pointer to the node which is having raw data in it
 	cinder::audio::MonitorNode* const					getMonitorNode();
 	// \brief returns a pointer to the node which is performing FFT on data
-    cinder::audio::MonitorSpectralNode* const			getMonitorSpectralNode();
-    size_t                                              getHardwareSampleRate();
+    cinder::audio::MonitorSpectralNode* const			getMonitorSpectralNode(size_t nodeNumber);
 
 private:
     std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode;
-    std::shared_ptr<cinder::audio::InputDeviceNode>		mInputDeviceNode2;
 	std::shared_ptr<cinder::audio::MonitorNode>			mMonitorNode;
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode;
     std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode2;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode3;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode4;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode5;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode6;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode7;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode8;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode9;
+    std::shared_ptr<cinder::audio::MonitorSpectralNode>	mMonitorSpectralNode10;
     ci::Timer                                           mTimer;
+    double                                              time;
+    double                                              timeNode1;
+    double                                              timeNode2;
+    double                                              timeNode3;
+    double                                              timeNode4;
+    double                                              timeNode5;
+    double                                              timeNode6;
+    double                                              timeNode7;
+    double                                              timeNode8;
+    double                                              timeNode9;
+    double                                              timeNode10;
     double                                              timeSec1Enter;
     double                                              timeSec1Exit;
     double                                              timeSec1Process;

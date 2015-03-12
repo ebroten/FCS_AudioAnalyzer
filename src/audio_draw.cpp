@@ -125,7 +125,7 @@ SpectrumPlot::SpectrumPlot(AudioNodes& nodes)
 // original draw function is from Cinder examples _audio/common
 void SpectrumPlot::drawLocal(float shift, float shiftLength, float maxDB) //Added 'size_t shift' to hopefully allow for window shifting
 {
-	auto& spectrum = mAudioNodes.getMonitorSpectralNode()->getMagSpectrum();
+	auto& spectrum = mAudioNodes.getMonitorSpectralNode(1)->getMagSpectrum();
 	
 	if (spectrum.empty())
 		return;
@@ -267,6 +267,7 @@ void SpectrogramPlot::setup(int duration, size_t width)
     mSpectrals[1] = Surface32f(mTexW, mTexH, false, SurfaceChannelOrder::RGBA);
     mTexCache = gl::Texture(mSpectrals.back());
     //gl::scale(mTexCache);  !!Need to check this out!!
+    nodeNumber = 1;
 }
 
 SpectrogramPlot::SpectrogramPlot(AudioNodes& nodes)
@@ -290,17 +291,15 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength, float maxDB)
         timeEnterPrev = 0;
         timeExit = 0;
         mTimer.start();
-
-        //Variables that can be initialized with constants:
-        pixelSpecMag = 0.0;
-        flag = 0;
-        pixelsPerBin = 1;
-        binSkipMult = 1;
-        hardwareSampleRate = 0;
-
-        //Variables that only need to be initialized on start-up (I hope):
-        hardwareSampleRate = mAudioNodes.getInputDeviceNode()->getSampleRate(); //Get current sample rate of audio hardware
     }
+
+    //Variables that can be initialized with constants:
+    pixelSpecMag = 0.0;
+    flag = 0;
+    pixelsPerBin = 1;
+    binSkipMult = 1;
+
+    hardwareSampleRate = mAudioNodes.getInputDeviceNode()->getSampleRate(); //Get current sample rate of audio hardware
     timeEnter = mTimer.getSeconds();
     timeReturn = timeEnter - timeEnterPrev;
     timeHop = timeReturn;
@@ -309,13 +308,19 @@ void SpectrogramPlot::drawLocal(float shift, float shiftLength, float maxDB)
         timeHop = timeReturn + (mTimer.getSeconds() - timeEnter);
     }
     timeEnterPrev = mTimer.getSeconds();
-    numBins = mAudioNodes.getMonitorSpectralNode()->getNumBins();
+    numBins = mAudioNodes.getMonitorSpectralNode(1)->getNumBins();
     //maxDispBins = numBins;
     maxDispBins = mTexW;
-    fftSize = mAudioNodes.getMonitorSpectralNode()->getFftSize();
+    fftSize = mAudioNodes.getMonitorSpectralNode(1)->getFftSize();
     actualHopRate = 1 / timeHop;
+
     timeSec1Enter = mTimer.getSeconds();
-    cinder::audio::MonitorSpectralNode* const mMonitorSpectralNode = mAudioNodes.getMonitorSpectralNode();
+    if (nodeNumber > 10)
+    {
+        nodeNumber = 1;
+    }
+    cinder::audio::MonitorSpectralNode* const mMonitorSpectralNode = mAudioNodes.getMonitorSpectralNode(nodeNumber);
+    nodeNumber++;
     timeSec1Exit = mTimer.getSeconds();
     timeSec1Process = timeSec1Exit - timeSec1Enter;
     timeSec2Enter = mTimer.getSeconds();

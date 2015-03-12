@@ -197,7 +197,11 @@ void InputAnalyzer::update()
         numBins = static_cast<float>(mAudioNodes.getNumBins());
         float plotWidth = static_cast<float>(mSpectrogramPlot.getPlotWidth());
         float pixelsPerBin = ceil(static_cast<float>(plotWidth) / static_cast<float>(mSpectrogramPlot.getMaxDispBins()));
-        float maxDispBins = plotWidth; // static_cast<float>(mSpectrogramPlot.getMaxDispBins()); //ceil(static_cast<float>(plotWidth) / static_cast<float>(pixelsPerBin));
+        float maxDispBins = plotWidth / 2;// static_cast<float>(mSpectrogramPlot.getMaxDispBins()); //ceil(static_cast<float>(plotWidth) / static_cast<float>(pixelsPerBin));
+        if (maxDispBins < 256)
+        {
+            maxDispBins = 256;
+        }
 		actualMaxFreq = static_cast<size_t>((maxDispBins * hSR) / (2 * numBins)); // working
         size_t minDispFreq = static_cast<size_t>((256 * hSR) / (2 * numBins)); // working
         fftSize = static_cast<size_t>((maxDispBins * hSR) / static_cast<float>(userSpecMaxFreq));
