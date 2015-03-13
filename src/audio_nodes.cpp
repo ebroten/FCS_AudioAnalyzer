@@ -43,7 +43,7 @@ void AudioNodes::setup(double userHopSize, size_t userWinSize, size_t fftSize, b
     mMonitorSpectralNode8 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     mMonitorSpectralNode9 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     mMonitorSpectralNode10 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
-    //mMonitorSpectralNode11 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
+    mMonitorSpectralNode11 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     //mMonitorSpectralNode12 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     //mMonitorSpectralNode13 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
     //mMonitorSpectralNode14 = mGlobals.getAudioContext().makeNode(new ci::audio::MonitorSpectralNode(monitorSpectralFormat));
@@ -119,12 +119,12 @@ void AudioNodes::setup(double userHopSize, size_t userWinSize, size_t fftSize, b
     }
     mInputDeviceNode >> mMonitorSpectralNode10;
     timeNode10 = mTimer.getSeconds();
-    //for (i = 0; time < userHopSizeMs; i++)
-    //{
-    //    time = mTimer.getSeconds() - timeNode10;
-    //}
-    //mInputDeviceNode >> mMonitorSpectralNode11;
-    //timeNode11 = mTimer.getSeconds();
+    for (i = 0; time < userHopSizeMs; i++)
+    {
+        time = mTimer.getSeconds() - timeNode10;
+    }
+    mInputDeviceNode >> mMonitorSpectralNode11;
+    timeNode11 = mTimer.getSeconds();
     //for (i = 0; time < userHopSizeMs; i++)
     //{
     //    time = mTimer.getSeconds() - timeNode11;

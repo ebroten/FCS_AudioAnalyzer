@@ -48,9 +48,9 @@ public:
 	Plot&			setDrawBounds(bool on = true)				{ mDrawBounds = on; return *this; }
 	Plot&			setDrawLabels(bool on = true)				{ mDrawLabels = on; return *this; }
 
-    virtual	void	drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB) = 0;
+    virtual	void	drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB, bool linearDbMode) = 0;
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void			draw(double winSizeMs, float shift, float shiftLength, float maxDB);
+    void			draw(double winSizeMs, float shift, float shiftLength, float maxDB, bool linearDbMode);
 	void			drawBounds();
 	void			drawLabels();
 
@@ -76,7 +76,7 @@ public:
 
     void					setGraphColor(const ci::ColorA& color);
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void					drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB);
+    void					drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB, bool linearDbMode);
 
 private:
 	ci::ColorA				mGraphColor;
@@ -90,7 +90,7 @@ public:
 
     void enableDecibelsScale(bool on = true);
     //Added float shift and float shiftLength parameters to allow for window shifting:
-    void drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB);
+    void drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB, bool linearDbMode);
 
 private:
 	bool					mScaleDecibels;
@@ -104,7 +104,7 @@ class SpectrogramPlot final : public Plot
 public:
     SpectrogramPlot(AudioNodes& nodes);
 
-    void							drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB) override;
+    void							drawLocal(double winSizeMs, float shift, float shiftLength, float maxDB, bool linearDBMode) override;
     void							setup(int duration, size_t width);
     size_t                          getMaxDispBins();
     double                          getActualHopRate();
@@ -115,6 +115,9 @@ private:
     std::vector<float>              spectrum;
     std::array<Surface32f, 2>   	mSpectrals;
     gl::Texture					    mTexCache;
+    std::string                     tickLabelYOriginString;
+    std::string                     tickLabelYCenterString;
+    std::string                     tickLabelYEndString;
     std::size_t						mTexW, mTexH;
     std::size_t						mFrameCounter;
     std::size_t						nodeNumber;
@@ -130,6 +133,10 @@ private:
     int								mActiveSurface;
     int								mBackBufferSurface;
     float                           pixelSpecMag;
+    float                           pixelDispMag;
+    float                           tickLabelYOrigin;
+    float                           tickLabelYCenter;
+    float                           tickLabelYEnd;
     ci::Timer                       mTimer;
     double                          timeEnter;
     double                          timeEnterPrev;

@@ -92,7 +92,7 @@ void Plot::drawLabels()
 
 	// draw y-axis label
 	ci::gl::pushModelView();
-    ci::gl::translate(mBounds.x1 - mLabelFont.getSize() * 3.5f, mBounds.y1 + mBounds.getHeight() / 2.0f); //(mBounds.x1 - mLabelFont.getSize() * 2.0f, mBounds.y1 + mBounds.getHeight() / 2.0f)
+    ci::gl::translate(mBounds.x1 - mLabelFont.getSize() * 2.5f, mBounds.y1 + mBounds.getHeight() / 2.0f); //(mBounds.x1 - mLabelFont.getSize() * 2.0f, mBounds.y1 + mBounds.getHeight() / 2.0f)
 	ci::gl::rotate(-90.0f);
     ci::gl::drawStringCentered(mVertText, ci::Vec2f::zero(), ci::ColorA::white(), mLabelFont);
 	ci::gl::popModelView();
@@ -442,17 +442,13 @@ void SpectrogramPlot::drawLocal(double winSizeMs, float shift, float shiftLength
         for (std::size_t i0 = 0; i0 < maxDispBins; i0++)
         {
             //Draw x-axis tick labels:
-            if ((i0 * binSkipMult) == 0) //Tick label for origin tick
+            if ((i0 * binSkipMult) == 0)
             {
                 ci::gl::drawStringCentered(std::to_string(mAudioNodes.getMaxFreqDisp(i0)), Vec2f(mBounds.x1, mBounds.y2 + 10), ci::ColorA::white(), mLabelFont);
             }
-            else if ((i0 * binSkipMult) == (maxDispBins / 2)) //Tick label for middle tick
+            else if ((i0 * binSkipMult) == maxDispBins - 25)
             {
-                ci::gl::drawStringCentered(std::to_string(mAudioNodes.getMaxFreqDisp(i0)), Vec2f(mBounds.x1 + ((mBounds.x2 - mBounds.x1) / 2), mBounds.y2 + 10), ci::ColorA::white(), mLabelFont);
-            }
-            else if ((i0 * binSkipMult) == maxDispBins - 1) //Tick label for end tick
-            {
-                ci::gl::drawStringCentered(std::to_string(mAudioNodes.getMaxFreqDisp(i0 + 1)), Vec2f(mBounds.x2, mBounds.y2 + 10), ci::ColorA::white(), mLabelFont);
+                flag = 0;
             }
             for (std::size_t i1 = 0; i1 < pixelsPerBin; i1++)
             {
@@ -501,32 +497,6 @@ void SpectrogramPlot::drawLocal(double winSizeMs, float shift, float shiftLength
     ci::gl::drawLine(Vec2f(mBounds.x1, mBounds.y1), Vec2f(mBounds.x1 - 10, mBounds.y1)); //Origin tick mark
     ci::gl::drawLine(Vec2f(mBounds.x1, mBounds.y1 + ((mBounds.y2 - mBounds.y1) / 2)), Vec2f(mBounds.x1 - 10, mBounds.y1 + ((mBounds.y2 - mBounds.y1) / 2))); //Center tick mark
     ci::gl::drawLine(Vec2f(mBounds.x1, mBounds.y2), Vec2f(mBounds.x1 - 10, mBounds.y2)); //End tick mark
-    //Draw y-axis tick labels:
-    std:ostringstream out;
-    if (mFrameCounter == 0) //Tick label for origin tick
-    {
-        tickLabelYOrigin = (static_cast<float>(mFrameCounter) / shift);
-        //tickLabelYOrigin = ceil((tickLabelYOrigin * pow(10, 2)) - 0.49) / pow(10, 2);
-        out << std::setprecision(2) << tickLabelYOrigin;
-        tickLabelYOriginString = out.str();
-    }
-    else if (mFrameCounter == mTexH / 2) //Tick label for center tick
-    {
-        tickLabelYCenter = (static_cast<float>(mFrameCounter) / shift);
-        //tickLabelYCenter = ceil((tickLabelYCenter * pow(10, 2)) - 0.49) / pow(10, 2);
-        out << std::setprecision(2) << tickLabelYCenter;
-        tickLabelYCenterString = out.str();
-    }
-     else if (mFrameCounter == mTexH - 1) //Tick label for end tick
-     {
-         tickLabelYEnd = (static_cast<float>(mFrameCounter + 1) / shift);
-         //tickLabelYEnd = ceil((tickLabelYEnd * pow(10, 2)) - 0.49) / pow(10, 2);
-         out << std::setprecision(2) << tickLabelYEnd;
-         tickLabelYEndString = out.str();
-     }
-    ci::gl::drawStringRight(tickLabelYOriginString, Vec2f(mBounds.x1 - 10, mBounds.y1 - (mLabelFont.getSize() / 2)), ci::ColorA::white(), mLabelFont); //Draw tick label for Origin tick
-    ci::gl::drawStringRight(tickLabelYCenterString, Vec2f(mBounds.x1 - 10, mBounds.y1 + ((mBounds.y2 - mBounds.y1) / 2) - (mLabelFont.getSize() / 2)), ci::ColorA::white(), mLabelFont); //Draw tick label for center tick
-    ci::gl::drawStringRight(tickLabelYEndString, Vec2f(mBounds.x1 - 10, mBounds.y2 - (mLabelFont.getSize() / 2)), ci::ColorA::white(), mLabelFont); //Draw tick label for end tick
 
     timeSec3Enter = mTimer.getSeconds();
     //gl::scale(

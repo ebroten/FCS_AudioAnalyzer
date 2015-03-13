@@ -49,6 +49,8 @@ public:
 	void		keyDown(ci::app::KeyEvent event) override final;
     // Toggles boolean flag used to pause display updating
     void        togglePauseDrawing();
+    // Gets fired on press of Linear / dB Mode button in parameter menu
+    void        linearDBModeButton();
 
 	AppGlobals&	getGlobals() { return mGlobals; }
 
@@ -81,13 +83,13 @@ private:
     size_t                                      dispBins;
     size_t                                      actualMaxFreq;
     size_t                                      nearestFft;
-    size_t                                      linearMult;
+    size_t                                      numDispParams;
     float                                       hSR;
     float                                       numBins;
     float                                       shift;
     float                                       shiftLength;
     float                                       userHopSizePrev;
-    float                                       userMaxDB;
+    float                                       userMaxMag;
     ci::Timer                                   mTimer;
     double                                      userHopSize;
     double                                      timeEnter;

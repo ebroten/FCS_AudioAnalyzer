@@ -90,10 +90,10 @@ void InputAnalyzer::setup()
 
     const auto window_size = ci::app::getWindowSize();
     const auto plot_size_width = 0.9f * window_size.x; // 90% of window width
-    const auto plot_size_height = 0.98f * window_size.y; // 98% of window height
+    const auto plot_size_height = 0.8f * 1.0f * window_size.y; // half of 90% of window width; 0.5f
     ci::Vec2f top_left = 0.05f * window_size;
     
-    fftSize = static_cast<size_t>((plot_size_width * 44100) / static_cast<float>(userSpecMaxFreq));
+    fftSize = static_cast<size_t>((2 * plot_size_width * 44100) / static_cast<float>(userSpecMaxFreq));
     nearestPow2 = ceil(log2(static_cast<double>(fftSize)));
     nearestFft = static_cast<size_t>(pow(2, nearestPow2));
     //if (nearestFft > fftSize)
@@ -272,18 +272,18 @@ void InputAnalyzer::draw()
         timeSec2Exit = mTimer.getSeconds();
         timeSec2Process = timeSec2Exit - timeSec2Enter;
 
+        //Draw parameter window:
+        timeSec3Enter = mTimer.getSeconds();
+        mParams->draw();
+        timeSec3Exit = mTimer.getSeconds();
+        timeSec3Process = timeSec3Exit - timeSec3Enter;
+
         // draw framerate in FPS
         timeSec4Enter = mTimer.getSeconds();
         drawFps();
         timeSec4Exit = mTimer.getSeconds();
         timeSec4Process = timeSec4Exit - timeSec4Enter;
     }
-
-    //Draw parameter window:
-    timeSec3Enter = mTimer.getSeconds();
-    mParams->draw();
-    timeSec3Exit = mTimer.getSeconds();
-    timeSec3Process = timeSec3Exit - timeSec3Enter;
 }
 
 void InputAnalyzer::shutdown()
@@ -313,17 +313,17 @@ void InputAnalyzer::drawFps()
     std::stringstream actualHopRate;
     numDispParams = 6;
     buf << "FPS: " << ci::app::getFrameRate();
-    ci::gl::drawString(buf.str(), ci::Vec2i((((0.9f * ci::app::getWindowSize().x) / numDispParams) * 0) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
+    ci::gl::drawStringRight(buf.str(), ci::Vec2i((((ci::app::getWindowWidth() - (0.9f * ci::app::getWindowSize().x)) / numDispParams) * 0) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
     numBins << "Number of Bins: " << mAudioNodes.getNumBins();
-    ci::gl::drawString(numBins.str(), ci::Vec2i(((((0.9f * ci::app::getWindowSize().x)) / numDispParams) * 1) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
+    ci::gl::drawStringRight(numBins.str(), ci::Vec2i((((ci::app::getWindowWidth() - (0.9f * ci::app::getWindowSize().x)) / numDispParams) * 1) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
     fftSize << "FFT Size: " << mAudioNodes.getFftSize();
-    ci::gl::drawString(fftSize.str(), ci::Vec2i(((((0.9f * ci::app::getWindowSize().x)) / numDispParams) * 2) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
+    ci::gl::drawStringRight(fftSize.str(), ci::Vec2i((((ci::app::getWindowWidth() - (0.9f * ci::app::getWindowSize().x)) / numDispParams) * 2) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
     numBinsDisp << "Number of Bins Displayed: " << mSpectrogramPlot.getMaxDispBins();
-    ci::gl::drawString(numBinsDisp.str(), ci::Vec2i(((((0.9f * ci::app::getWindowSize().x)) / numDispParams) * 3) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
+    ci::gl::drawStringRight(numBinsDisp.str(), ci::Vec2i((((ci::app::getWindowWidth() - (0.9f * ci::app::getWindowSize().x)) / numDispParams) * 3) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
     maxFreqDisp << "Max Freq Displayed: " << mAudioNodes.getMaxFreqDisp(mSpectrogramPlot.getMaxDispBins());
-    ci::gl::drawString(maxFreqDisp.str(), ci::Vec2i(((((0.9f * ci::app::getWindowSize().x)) / numDispParams) * 4) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
+    ci::gl::drawStringRight(maxFreqDisp.str(), ci::Vec2i((((ci::app::getWindowWidth() - (0.9f * ci::app::getWindowSize().x)) / numDispParams) * 4) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
     actualHopRate << "Hop Rate (Hz): " << mSpectrogramPlot.getActualHopRate();
-    ci::gl::drawString(actualHopRate.str(), ci::Vec2i(((((0.9f * ci::app::getWindowSize().x)) / numDispParams) * 5) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
+    ci::gl::drawStringRight(actualHopRate.str(), ci::Vec2i((((ci::app::getWindowWidth() - (0.9f * ci::app::getWindowSize().x)) / numDispParams) * 5) + (0.05f * ci::app::getWindowSize().x), ci::app::getWindowHeight() - 10));
 }
 
 void InputAnalyzer::togglePauseDrawing()
